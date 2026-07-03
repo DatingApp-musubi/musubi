@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0d0b09">
+<title>MUSUBI 무스비 — 結び</title>
+<style>
+  :root{--bg:#0d0b09;--surface:#171310;--surface2:#211b16;--gold:#c9a45c;--gold-light:#e6cf9a;
+    --text:#f2ece1;--muted:#9c8f7d;--danger:#d99790;--dangerbg:#b0564f;--ok:#8fc6a8;}
+  *{margin:0;padding:0;box-sizing:border-box;font-family:'Apple SD Gothic Neo','Noto Sans KR','Hiragino Sans','Pretendard',sans-serif;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{background:#060504;display:flex;justify-content:center;color:var(--text);}
+  .shell{width:100%;max-width:480px;height:100dvh;background:var(--bg);position:relative;overflow:hidden;
+    box-shadow:0 0 60px rgba(0,0,0,.8);}
+  .screen{position:absolute;inset:0;padding:max(16px,env(safe-area-inset-top)) 0 86px;display:none;flex-direction:column;overflow:hidden;}
+  .screen.active{display:flex;}
+  .full{padding-bottom:0!important;}
+
+  /* ===== onboarding / test ===== */
+  .onb{position:absolute;inset:0;background:var(--bg);z-index:70;display:none;flex-direction:column;
+    padding:max(28px,env(safe-area-inset-top)) 24px 28px;overflow-y:auto;}
+  .onb.active{display:flex;}
+  .step{font-size:11px;color:var(--gold);letter-spacing:3px;margin-bottom:10px;}
+  .onb h2{font-size:21px;font-weight:800;line-height:1.45;margin-bottom:8px;}
+  .desc{font-size:13px;color:var(--muted);line-height:1.75;margin-bottom:20px;}
+  .obody{flex:1;}
+  .ofoot{padding-top:16px;}
+  .goldbtn{width:100%;background:linear-gradient(135deg,#c9a45c,#a07c33);color:#171008;font-weight:700;
+    font-size:15px;border:none;border-radius:14px;padding:15px;cursor:pointer;}
+  .goldbtn:disabled{opacity:.35;}
+  .ghostbtn{width:100%;background:none;border:none;color:var(--muted);font-size:13px;margin-top:14px;cursor:pointer;text-decoration:underline;}
+  .splash{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;}
+  .splash .mark{font-size:56px;margin-bottom:16px;}
+  .splash .bn{font-size:34px;font-weight:800;letter-spacing:3px;}
+  .splash .bn em{color:var(--gold);font-style:normal;}
+  .splash .bs{font-size:12px;color:var(--muted);letter-spacing:5px;margin-top:8px;}
+  .splash .tg{font-size:14px;color:var(--muted);margin-top:28px;line-height:1.85;}
+  .verbtn{display:flex;align-items:center;gap:14px;width:100%;background:var(--surface2);border:1.5px solid #3a3128;
+    border-radius:16px;padding:18px;cursor:pointer;margin-bottom:12px;text-align:left;color:var(--text);}
+  .verbtn .ic{font-size:28px;}
+  .verbtn b{display:block;font-size:15.5px;margin-bottom:3px;}
+  .verbtn span{font-size:12px;color:var(--muted);line-height:1.5;}
+  .prog{height:5px;background:#241d15;border-radius:3px;margin-bottom:8px;overflow:hidden;flex-shrink:0;}
+  .prog .bar{height:100%;background:linear-gradient(90deg,#c9a45c,#e6cf9a);border-radius:3px;transition:width .25s;}
+  .pnum{font-size:11px;color:var(--muted);text-align:right;margin-bottom:16px;}
+  .qtext{font-size:17.5px;line-height:1.7;min-height:92px;margin-bottom:20px;font-weight:600;}
+  .lik{display:flex;flex-direction:column;gap:9px;}
+  .lk{display:flex;align-items:center;gap:12px;border:1.5px solid #3a3128;background:var(--surface2);
+    border-radius:14px;padding:14px 16px;cursor:pointer;font-size:14px;}
+  .lk.sel{border-color:var(--gold);background:rgba(201,164,92,.15);}
+  .lk .n{width:26px;height:26px;border-radius:50%;background:#2a231c;display:flex;align-items:center;justify-content:center;
+    font-size:12px;font-weight:800;color:var(--gold-light);flex-shrink:0;}
+  .backlink{background:none;border:none;color:var(--muted);font-size:13px;margin-top:16px;cursor:pointer;}
+  .docrow{display:flex;align-items:center;gap:12px;border:1px solid #2e2620;border-radius:14px;padding:15px;
+    margin-bottom:10px;background:var(--surface);cursor:pointer;}
+  .docrow .di{width:40px;height:40px;border-radius:10px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .docrow .dn{font-size:13.5px;font-weight:600;}
+  .docrow .ds{font-size:11px;color:var(--muted);margin-top:2px;}
+  .docrow .dst{font-size:11px;color:#6b5f4f;font-weight:700;margin-left:auto;flex-shrink:0;}
+  .docrow.up{border-color:rgba(95,156,122,.5);}
+  .docrow.up .dst{color:var(--ok);}
+  .slot{border:1.5px solid #3a3128;background:var(--surface2);border-radius:14px;padding:15px;margin-bottom:10px;cursor:pointer;font-size:14px;display:flex;justify-content:space-between;}
+  .slot.sel{border-color:var(--gold);background:rgba(201,164,92,.15);}
+  .slot span{color:var(--muted);font-size:12px;}
+  .drcard{border:1px solid rgba(201,164,92,.4);border-radius:16px;padding:16px;background:linear-gradient(135deg,#1d1710,#241c12);
+    display:flex;gap:14px;align-items:center;margin-bottom:16px;}
+  .drcard .em{font-size:30px;}
+  .drcard b{font-size:13.5px;display:block;margin-bottom:4px;}
+  .drcard span{font-size:11.5px;color:var(--muted);line-height:1.55;}
+
+  /* ===== verdict / score bars ===== */
+  .verdict{border-radius:16px;padding:18px;text-align:center;margin-bottom:18px;font-weight:800;font-size:16.5px;}
+  .v-pass{background:rgba(95,156,122,.15);border:1px solid rgba(95,156,122,.5);color:var(--ok);}
+  .v-hold{background:rgba(201,164,92,.12);border:1px solid rgba(201,164,92,.5);color:var(--gold-light);}
+  .v-fail{background:rgba(176,86,79,.13);border:1px solid rgba(176,86,79,.5);color:var(--danger);}
+  .verdict small{display:block;font-weight:400;font-size:12px;margin-top:8px;line-height:1.6;opacity:.85;}
+  .scrow{margin-bottom:14px;}
+  .st1{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px;align-items:center;}
+  .st1 .sv{font-weight:800;color:var(--gold-light);}
+  .sbar{height:8px;background:#241d15;border-radius:4px;position:relative;}
+  .sfill{height:100%;border-radius:4px;}
+  .cut{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--danger);}
+  .st2{display:flex;justify-content:space-between;font-size:10px;color:#6b5f4f;margin-top:3px;}
+  .pill{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:800;margin-left:6px;}
+  .p-ok{background:rgba(95,156,122,.2);color:var(--ok);}
+  .p-warn{background:rgba(201,164,92,.2);color:var(--gold-light);}
+  .p-bad{background:rgba(176,86,79,.2);color:var(--danger);}
+  .vflag{font-size:12px;line-height:1.7;color:var(--muted);border-top:1px dashed #2e2620;padding-top:12px;margin:8px 0 14px;}
+
+  /* ===== app: tabbar ===== */
+  .tabbar{position:absolute;bottom:0;left:0;right:0;height:calc(72px + env(safe-area-inset-bottom));
+    padding-bottom:env(safe-area-inset-bottom);background:rgba(13,11,9,.97);border-top:1px solid #2a231c;display:none;z-index:40;}
+  .tabbar.on{display:flex;}
+  .tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:#6b5f4f;font-size:10px;}
+  .tab svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.7;}
+  .tab.on{color:var(--gold);}
+  .apptitle{display:flex;align-items:center;justify-content:space-between;padding:8px 20px 12px;flex-shrink:0;}
+  .apptitle .logo{font-weight:800;font-size:19px;letter-spacing:1px;}
+  .apptitle .logo em{color:var(--gold);font-style:normal;}
+  .apptitle .sub{font-size:10px;color:var(--muted);letter-spacing:2px;}
+  .icbtn{width:34px;height:34px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;color:var(--gold);cursor:pointer;font-size:15px;}
+
+  /* ===== discover ===== */
+  .cardwrap{flex:1;position:relative;margin:0 16px 8px;}
+  .pcard{position:absolute;inset:0;border-radius:24px;overflow:hidden;background:var(--surface);border:1px solid #2e2620;
+    box-shadow:0 18px 40px rgba(0,0,0,.5);transition:transform .35s ease,opacity .35s ease;}
+  .pcard.gone-l{transform:translateX(-120%) rotate(-8deg);opacity:0;}
+  .pcard.gone-r{transform:translateX(120%) rotate(8deg);opacity:0;}
+  .photo{position:absolute;inset:0;background-size:cover;background-position:center 20%;}
+  .grad{position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,rgba(10,8,6,.93) 100%);}
+  .vbadge{position:absolute;top:16px;left:16px;background:rgba(13,11,9,.75);border:1px solid var(--gold);color:var(--gold-light);
+    font-size:11px;padding:5px 10px;border-radius:20px;backdrop-filter:blur(4px);}
+  .pinfo{position:absolute;left:20px;right:20px;bottom:18px;}
+  .pinfo h2{font-size:24px;font-weight:700;}
+  .pinfo h2 .age{font-size:19px;font-weight:400;color:#d8cdbb;margin-left:8px;}
+  .loc{font-size:12.5px;color:#cbbfa9;margin-top:5px;}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;}
+  .chip{font-size:11px;padding:4px 10px;border-radius:14px;background:rgba(201,164,92,.16);border:1px solid rgba(201,164,92,.4);color:var(--gold-light);}
+  .chip.score{background:rgba(95,156,122,.16);border-color:rgba(95,156,122,.45);color:#a9d4bc;}
+  .actions{display:flex;justify-content:center;gap:26px;padding:12px 0 4px;flex-shrink:0;}
+  .act{width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:24px;
+    border:1px solid #332b22;background:var(--surface2);transition:transform .15s;}
+  .act:active{transform:scale(.88);}
+  .act.pass{color:#8d7f6d;}
+  .act.like{background:linear-gradient(135deg,#c9a45c,#a07c33);color:#171008;border:none;box-shadow:0 8px 24px rgba(201,164,92,.35);}
+  .act.sml{width:46px;height:46px;font-size:17px;color:#7fa3c0;align-self:center;}
+  .empty{position:absolute;inset:0;border-radius:24px;border:1px dashed #3a3128;display:none;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--muted);font-size:13px;text-align:center;padding:30px;}
+  .empty .big{font-size:40px;}
+  .matchov{position:absolute;inset:0;background:rgba(8,6,4,.94);z-index:60;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px;}
+  .matchov.show{display:flex;}
+  .matchov .knot{font-size:56px;margin-bottom:18px;}
+  .matchov h2{font-size:25px;color:var(--gold-light);font-weight:800;margin-bottom:10px;}
+  .matchov p{color:var(--muted);font-size:13.5px;line-height:1.7;margin-bottom:26px;}
+  .matchov .goldbtn{width:auto;padding:14px 36px;border-radius:26px;}
+
+  /* ===== likes / events / chat / my ===== */
+  .secthead{padding:2px 20px 12px;font-size:13px;color:var(--muted);flex-shrink:0;}
+  .mgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 16px 12px;overflow-y:auto;}
+  .mcell{border-radius:18px;overflow:hidden;position:relative;height:200px;background-size:cover;background-position:center 20%;cursor:pointer;}
+  .mcell .gr{position:absolute;inset:0;background:linear-gradient(180deg,transparent 50%,rgba(10,8,6,.9));}
+  .mcell .nm{position:absolute;bottom:10px;left:12px;font-size:13px;font-weight:600;}
+  .mcell .st{position:absolute;top:10px;right:10px;font-size:10px;background:rgba(201,164,92,.9);color:#171008;font-weight:700;padding:3px 8px;border-radius:10px;}
+  .evbanner{margin:0 16px 14px;background:linear-gradient(135deg,#1f180f,#241b10);border:1px solid rgba(201,164,92,.4);border-radius:14px;padding:12px 14px;font-size:11.5px;color:var(--gold-light);line-height:1.65;flex-shrink:0;}
+  .evlist{flex:1;overflow-y:auto;padding:0 16px 12px;}
+  .evcard{display:flex;gap:14px;background:var(--surface);border:1px solid #2e2620;border-radius:18px;padding:16px;margin-bottom:12px;position:relative;}
+  .evcard.hot{border-color:var(--gold);}
+  .evcard .tag{position:absolute;top:-9px;right:14px;background:var(--gold);color:#171008;font-size:10px;font-weight:800;padding:3px 10px;border-radius:10px;}
+  .evdate{width:56px;flex-shrink:0;text-align:center;background:var(--surface2);border-radius:12px;padding:10px 4px;height:fit-content;}
+  .evdate b{display:block;font-size:15px;color:var(--gold-light);}
+  .evdate span{font-size:9.5px;color:var(--muted);}
+  .evc{flex:1;min-width:0;}
+  .evt{font-size:14.5px;font-weight:700;}
+  .evd{font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.5;}
+  .evm{font-size:11px;color:#b3a58f;margin-top:6px;}
+  .evbtn{margin-top:10px;width:100%;padding:9px;border-radius:12px;border:none;background:linear-gradient(135deg,#c9a45c,#a07c33);color:#171008;font-weight:700;font-size:12px;cursor:pointer;}
+  .evbtn.joined{background:var(--surface2);color:var(--ok);border:1px solid rgba(95,156,122,.45);}
+  .clist{overflow-y:auto;flex:1;}
+  .citem{display:flex;gap:12px;padding:13px 20px;cursor:pointer;border-bottom:1px solid #1d1812;align-items:center;}
+  .avatar{width:52px;height:52px;border-radius:50%;flex-shrink:0;background-size:cover;background-position:center;}
+  .citem .cc{flex:1;min-width:0;}
+  .citem .cn{font-size:14.5px;font-weight:600;}
+  .citem .cm{font-size:12.5px;color:var(--muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .citem .ct{font-size:10.5px;color:#6b5f4f;flex-shrink:0;}
+  .unread{min-width:18px;height:18px;border-radius:9px;background:var(--gold);color:#171008;font-size:10.5px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 5px;margin-top:5px;margin-left:auto;}
+  .chathead{display:flex;align-items:center;gap:12px;padding:4px 16px 12px;border-bottom:1px solid #221c15;flex-shrink:0;}
+  .back{font-size:22px;color:var(--gold);cursor:pointer;padding:4px 8px;}
+  .chathead .who{flex:1;}
+  .chathead .who b{font-size:15px;}
+  .chathead .who span{display:block;font-size:11px;color:var(--ok);}
+  .msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;}
+  .msg{max-width:80%;padding:11px 14px;border-radius:16px;font-size:13.5px;line-height:1.55;}
+  .msg.them{background:var(--surface2);border-bottom-left-radius:4px;align-self:flex-start;}
+  .msg.me{background:linear-gradient(135deg,#bd9850,#96742f);color:#171008;border-bottom-right-radius:4px;align-self:flex-end;}
+  .msg .orig{font-size:11.5px;opacity:.62;margin-top:7px;padding-top:7px;border-top:1px dashed rgba(255,255,255,.25);}
+  .msg.me .orig{border-top-color:rgba(0,0,0,.25);}
+  .trnote{align-self:center;font-size:10.5px;color:#6b5f4f;}
+  .inputrow{display:flex;gap:8px;padding:10px 14px calc(10px + env(safe-area-inset-bottom));border-top:1px solid #221c15;flex-shrink:0;}
+  .inputrow input{flex:1;background:var(--surface2);border:1px solid #2e2620;border-radius:22px;padding:12px 16px;color:var(--text);font-size:14px;outline:none;}
+  .send{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#c9a45c,#a07c33);border:none;color:#171008;font-size:16px;cursor:pointer;flex-shrink:0;}
+  .my{overflow-y:auto;padding:0 20px 20px;flex:1;}
+  .myhead{display:flex;align-items:center;gap:16px;padding:6px 0 18px;}
+  .myhead .avatar{width:72px;height:72px;}
+  .myhead h3{font-size:18px;}
+  .myhead .tier{font-size:11px;color:var(--gold);letter-spacing:2px;margin-top:4px;}
+  .vcard{background:linear-gradient(135deg,#1d1710,#241c12);border:1px solid rgba(201,164,92,.45);border-radius:18px;padding:16px 18px;margin-bottom:14px;}
+  .vcard .vt{font-size:13.5px;font-weight:700;color:var(--gold-light);margin-bottom:6px;}
+  .vcard .vs{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:12px;}
+  .vrow{display:flex;justify-content:space-between;align-items:center;padding:13px 2px;border-bottom:1px solid #1d1812;font-size:13.5px;}
+  .vrow .lab{color:var(--muted);font-size:12.5px;}
+  .vrow.link{cursor:pointer;}
+  .tiers{flex:1;overflow-y:auto;padding:0 18px 16px;}
+  .tier-card{border-radius:20px;padding:18px;margin-bottom:14px;border:1px solid #2e2620;background:var(--surface);position:relative;}
+  .tier-card.hot{border:1.5px solid var(--gold);background:linear-gradient(135deg,#1f180f,#241b10);}
+  .tier-card .tn{font-size:15px;font-weight:800;letter-spacing:2px;}
+  .tier-card.hot .tn{color:var(--gold-light);}
+  .tier-card .tp{font-size:20px;font-weight:800;margin:8px 0 2px;}
+  .tier-card .tp small{font-size:12px;color:var(--muted);font-weight:400;}
+  .tier-card ul{list-style:none;margin-top:10px;}
+  .tier-card li{font-size:12px;color:var(--muted);padding:4px 0 4px 18px;position:relative;line-height:1.5;}
+  .tier-card li::before{content:'✦';position:absolute;left:0;color:var(--gold);font-size:10px;top:6px;}
+  .tier-card .tag{position:absolute;top:-9px;right:16px;background:var(--gold);color:#171008;font-size:10px;font-weight:800;padding:3px 10px;border-radius:10px;}
+  .freenote{background:rgba(95,156,122,.12);border:1px solid rgba(95,156,122,.35);border-radius:14px;padding:14px 16px;font-size:12.5px;color:#a9d4bc;line-height:1.65;margin-bottom:14px;}
+  .disc{text-align:center;font-size:9.5px;color:#4d4335;padding:6px 20px;line-height:1.6;flex-shrink:0;}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ================= ONBOARDING ================= -->
+  <div class="onb active" id="onb"><div id="ob" style="display:flex;flex-direction:column;flex:1;min-height:0;"></div></div>
+
+  <!-- ================= APP SCREENS ================= -->
+  <div class="screen" id="scr-discover">
+    <div class="apptitle"><div><div class="logo">MU<em>SUBI</em></div><div class="sub" id="d-sub"></div></div><div class="icbtn">⚙</div></div>
+    <div class="cardwrap" id="cardwrap"><div class="empty" id="empty"><div class="big">🎋</div><div id="empty-txt"></div></div></div>
+    <div class="actions">
+      <div class="act pass" onclick="swipe(false)">✕</div>
+      <div class="act sml">★</div>
+      <div class="act like" onclick="swipe(true)">♥</div>
+    </div>
+  </div>
+
+  <div class="screen" id="scr-likes">
+    <div class="apptitle"><div class="logo" id="l-title"></div><div class="icbtn">↻</div></div>
+    <div class="secthead" id="l-head"></div>
+    <div class="mgrid" id="l-grid"></div>
+  </div>
+
+  <div class="screen" id="scr-events">
+    <div class="apptitle"><div class="logo" id="e-title"></div><div class="icbtn">🗓</div></div>
+    <div class="evbanner" id="e-banner"></div>
+    <div class="evlist" id="e-list"></div>
+  </div>
+
+  <div class="screen" id="scr-chats">
+    <div class="apptitle"><div class="logo" id="c-title"></div><div class="icbtn">✎</div></div>
+    <div class="clist" id="c-list"></div>
+  </div>
+
+  <div class="screen full" id="scr-room">
+    <div class="chathead">
+      <div class="back" onclick="showScreen('scr-chats')">‹</div>
+      <div class="avatar" id="r-avatar" style="width:42px;height:42px;"></div>
+      <div class="who"><b id="r-name"></b><span id="r-status"></span></div>
+      <div class="icbtn">📞</div>
+    </div>
+    <div class="msgs" id="msgs"></div>
+    <div class="inputrow"><input id="minput" onkeydown="if(event.key==='Enter')sendMsg()"><button class="send" onclick="sendMsg()">↑</button></div>
+  </div>
+
+  <div class="screen" id="scr-my">
+    <div class="apptitle"><div class="logo" id="m-title"></div><div class="icbtn">⚙</div></div>
+    <div class="my" id="m-body"></div>
+  </div>
+
+  <div class="screen" id="scr-tier">
+    <div class="chathead" style="border-bottom:none;">
+      <div class="back" onclick="showScreen('scr-my')">‹</div>
+      <div class="who"><b id="t-title"></b></div>
+    </div>
+    <div class="tiers" id="t-body"></div>
+  </div>
+
+  <div class="matchov" id="matchov">
+    <div class="knot">🎀</div><h2 id="match-h"></h2><p id="matchname"></p>
+    <button class="goldbtn" onclick="toMsg()" id="match-btn"></button>
+    <button class="ghostbtn" onclick="hideMatch()" id="match-skip"></button>
+  </div>
+
+  <!-- ================= TAB BAR ================= -->
+  <div class="tabbar" id="tabbar">
+    <div class="tab on" data-s="scr-discover" onclick="go(this)"><svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.8-10-9.5C.5 8 2.5 4.5 6 4.5c2.2 0 3.8 1.2 6 3.6 2.2-2.4 3.8-3.6 6-3.6 3.5 0 5.5 3.5 4 7-2.5 4.7-10 9.5-10 9.5z"/></svg><span class="tl"></span></div>
+    <div class="tab" data-s="scr-likes" onclick="go(this)"><svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.3 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8z"/></svg><span class="tl"></span></div>
+    <div class="tab" data-s="scr-events" onclick="go(this)"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span class="tl"></span></div>
+    <div class="tab" data-s="scr-chats" onclick="go(this)"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-8 8H4l2-3a8 8 0 1 1 15-5z"/></svg><span class="tl"></span></div>
+    <div class="tab" data-s="scr-my" onclick="go(this)"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg><span class="tl"></span></div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   MUSUBI 통합 웹앱 v0.2 — 온보딩(MPI 실검사) + 메인 앱
+   ============================================================ */
+const UIMG=(id,w)=>`https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&q=75`;
+
+/* ---------------- MPI 문항 ---------------- */
+const SOC_KR=[["처음 보는 사람들과의 모임에서도 금방 어울린다.",0],["게임이나 액티비티에 적극적으로 참여한다.",0],["모임에서 분위기를 띄우는 역할을 자주 맡는다.",0],["여러 명이 모이는 자리는 피하고 싶다.",1],["모임에서 소외된 사람에게 먼저 말을 건다.",0],["보드게임이나 노래방처럼 함께 노는 활동을 즐긴다.",0],["모임에서는 주로 듣기만 하는 편이다.",1],["낯선 문화의 놀이도 기꺼이 배워서 참여한다.",0]];
+const SOC_JP=[["初対面の人たちの集まりでもすぐに打ち解ける。",0],["ゲームやアクティビティに積極的に参加する。",0],["集まりで場を盛り上げる役をよく任される。",0],["大人数の集まりは避けたい。",1],["集まりで輪に入れていない人に自分から話しかける。",0],["ボードゲームやカラオケなど、みんなで遊ぶ活動が好きだ。",0],["集まりでは聞き役に回ることがほとんどだ。",1],["知らない文化の遊びも喜んで覚えて参加する。",0]];
+
+const SCALES={
+m:[
+ {c:"K1",n:"자상함",cut:3.4,gate:1,it:[["연인이 힘들어 보이면 해결책보다 마음 상태를 먼저 묻는다.",0],["상대의 작은 표정 변화를 잘 알아차린다.",0],["상대가 말하지 않아도 필요한 것을 먼저 챙겨준 적이 많다.",0],["다른 사람의 고민을 들어주느라 내 일정을 미룬 적이 있다.",0],["다른 사람의 감정 문제에 휘말리는 것이 귀찮게 느껴진다.",1],["아픈 사람을 보면 내 일처럼 마음이 쓰인다.",0],["상대의 입장에서 상황을 다시 생각해보는 습관이 있다.",0],["위로해야 할 때 무슨 말을 해야 할지 몰라 자리를 피하게 된다.",1]]},
+ {c:"K2",n:"강인함",cut:3.4,gate:1,it:[["예상치 못한 문제가 생겨도 침착함을 유지한다.",0],["주변 사람들이 위기 상황에서 나에게 의지하는 편이다.",0],["힘든 일이 있어도 해야 할 일을 끝까지 해낸다.",0],["스트레스를 받으면 쉽게 무너지는 편이다.",1],["중요한 결정을 미루지 않고 책임지고 내린다.",0],["비판을 들으면 오랫동안 마음이 흔들린다.",1],["몸이 힘들어도 약속한 일은 지킨다.",0],["어려운 상황에서 오히려 집중력이 높아진다.",0]]},
+ {c:"K3",n:"적극성",cut:3.4,gate:1,it:[["마음에 드는 사람에게 먼저 연락한다.",0],["새로운 모임에서 먼저 말을 거는 편이다.",0],["원하는 것이 있으면 주저하지 않고 시도한다.",0],["거절당할까 봐 제안을 망설이는 편이다.",1],["데이트 계획을 스스로 세워 제안한다.",0],["처음 만난 사람과의 대화를 즐긴다.",0],["관심이 있어도 상대가 먼저 다가오기를 기다린다.",1],["하고 싶은 말은 상대의 눈을 보고 직접 한다.",0]]},
+ {c:"K4",n:"다정함",cut:3.4,gate:1,it:[["연인에게 하루 일과를 묻는 연락을 거르지 않는다.",0],["기념일을 먼저 기억하고 준비한다.",0],["상대가 지나가듯 말한 것을 기억했다가 챙긴다.",0],["연애 초반이 지나면 연락 빈도가 눈에 띄게 준다.",1],["함께한 추억을 사진이나 기록으로 남기는 편이다.",0],["상대의 가족이나 친구의 근황도 관심을 갖고 묻는다.",0],["아침 인사나 잘 자라는 인사를 꾸준히 한다.",0],["특별한 일이 없으면 굳이 연락할 필요를 못 느낀다.",1]]},
+ {c:"K5",n:"애정 표현력",cut:3.4,gate:1,it:[["좋아하는 마음을 말로 자주 표현한다.",0],["고마움을 느끼면 그 자리에서 말한다.",0],["애정 표현을 하는 것이 쑥스러워 피하게 된다.",1],["상대의 좋은 점을 구체적으로 칭찬한다.",0],["사람들 앞에서도 연인을 존중하는 표현을 한다.",0],["마음은 있지만 표현하지 않아도 상대가 알아주길 바란다.",1],["편지나 메시지로 마음을 전하는 것을 좋아한다.",0],["다정한 몸짓이나 가벼운 스킨십이 자연스럽다.",0]]},
+ {c:"K6",n:"리드력",cut:3.4,gate:1,it:[["데이트 코스를 미리 조사해 계획을 세운다.",0],["여럿이 결정을 못 내릴 때 내가 정리해서 제안한다.",0],["식당 예약이나 주문을 내가 맡는 것이 편하다.",0],["상대가 계획을 다 세워주기를 바라는 편이다.",1],["여행 일정과 동선을 주도적으로 짠다.",0],["문제가 생기면 대안을 먼저 제시한다.",0],["결정해야 할 일이 생기면 일단 미룬다.",1],["처음 가는 곳에서도 길을 찾고 상황을 정리하는 역할을 한다.",0]]},
+ {c:"K7",n:"존중·비구속",cut:3.8,gate:2,it:[["연인의 친구 관계를 있는 그대로 존중한다.",0],["연인의 휴대폰을 확인하고 싶은 충동이 든다.",1],["연인이 나 없이 모임에 가도 편안하다.",0],["연인이 이성 동료와 식사하는 것은 용납하기 어렵다.",1],["연인의 취미 생활 시간을 보장해야 한다고 생각한다.",0],["연락이 두 시간 이상 안 되면 화가 난다.",1],["서로에게 사생활 공간이 필요하다고 생각한다.",0],["사랑한다면 일정을 서로 모두 공유해야 한다고 생각한다.",1]]},
+ {c:"K8",n:"모임 사교성",cut:3.6,gate:0,it:SOC_KR}
+],
+f:[
+ {c:"J1",n:"親和性",cut:3.4,gate:1,it:[["相手の意見が自分と違っても、まず最後まで聞く。",0],["一緒にいる人が心地よいかどうかを第一に考える。",0],["自分のやり方が通らないと我慢できない。",1],["対立が起きたら、譲れる部分を先に探す。",0],["相手の提案を前向きに受け入れる方だ。",0],["些細なことで言い争いになることが多い。",1],["初対面の人でも、良い面を先に見ようとする。",0],["一緒に作業すると協力的だと言われる。",0]]},
+ {c:"J2",n:"愛嬌",cut:3.4,gate:1,it:[["好きな人の前では明るく茶目っ気のある一面が出る。",0],["感謝やうれしさを表情や身振りで大きく表現する。",0],["相手を笑わせるのが楽しい。",0],["感情を表に出すのが苦手だ。",1],["親しい人には甘えた表現が自然にできる。",0],["あだ名や優しい話し方をよく使う。",0],["無愛想だと言われることが多い。",1],["相手が疲れて見えたら、気分をほぐそうと努める。",0]]},
+ {c:"J3",n:"デート費用の公平性",cut:3.4,gate:1,it:[["デート費用はお互いの状況に合わせて分担するのが自然だ。",0],["相手が支払ってくれたら、次は自分が出そうとする。",0],["デート費用は男性が払うのが当然だと思う。",1],["プレゼントをもらったら、同じ気持ちでお返しをしようとする。",0],["相手の経済的な負担を思いやる方だ。",0],["記念日のプレゼントの値段が愛情の大きさだと思う。",1],["一緒に使うお金の計画を相談するのは苦にならない。",0],["相手に割り勘を提案されると寂しく感じる。",1]]},
+ {c:"J4",n:"傾聴・リアクション",cut:3.4,gate:1,it:[["相づちが上手だと言われる。",0],["話を聞くときは相手の目を見て集中する。",0],["相手が言ったことを覚えていて、後でまた尋ねる。",0],["会話中にスマホをよく確認する。",1],["面白い話には大きく笑って反応する。",0],["相手の話が長くなると、遮って自分の話を始める。",1],["質問を投げかけて、相手がもっと話せるようにする。",0],["会話中に相手の気分の変化に気づく。",0]]},
+ {c:"J5",n:"穏やかな対処",cut:3.4,gate:1,it:[["腹が立っても、声を荒げる前に一度立ち止まる。",0],["不満は相手を責めない言葉で伝える。",0],["けんかをすると何日も口をきかない方だ。",1],["対立の後、自分から仲直りの言葉をかけられる。",0],["感情が高ぶったら、時間を置いて話し直そうと提案する。",0],["腹が立つと過去のことまで持ち出して責める。",1],["相手の謝罪を受け入れたら、同じことを蒸し返さない。",0],["けんかの際に席を立って出て行ったことがある。",1]]},
+ {c:"J6",n:"自立性",cut:3.4,gate:1,it:[["問題が起きたら、まず自分で解決方法を探す。",0],["自分の生活費や支出を自分で管理している。",0],["一人で過ごす時間をうまく活用している。",0],["決断するとき、誰かに代わりに決めてほしいと思う。",1],["新しい技術や知識を自分で学ぶのが好きだ。",0],["困ったことが起きると、すぐに人を頼る。",1],["恋人が忙しいときも、自分の日常を楽しく保てる。",0],["知らない場所でも必要なことを一人で処理できる。",0]]},
+ {c:"J7",n:"ソーシャル指数",cut:3.6,gate:0,it:SOC_JP}
+]};
+const SD={kr:["나는 지금까지 거짓말을 한 번도 한 적이 없다.","나는 어떤 상황에서도 화를 낸 적이 없다.","나는 모든 사람에게 항상 친절하다.","나는 약속에 늦은 적이 단 한 번도 없다.","나는 다른 사람을 부러워해 본 적이 없다.","나는 하기 싫은 일을 미뤄 본 적이 없다."],
+jp:["私はこれまで一度も嘘をついたことがない。","私はどんな状況でも腹を立てたことがない。","私は誰に対してもいつも親切だ。","私は約束に遅れたことが一度もない。","私は人をうらやましいと思ったことがない。","私はやりたくないことを後回しにしたことがない。"]};
+const INF={kr:["나는 지난 한 달 동안 잠을 전혀 자지 않았다.","나는 내가 사는 나라의 수도가 어디인지 모른다."],
+jp:["私はこの一か月、まったく眠っていない。","私は自分の住んでいる国の首都を知らない。"]};
+const INC={
+ m:[{q:"마음에 드는 사람이 있어도 먼저 연락하지 않는 편이다.",ref:["K3",0],dir:-1},{q:"연인과 연락이 잠시 안 되어도 크게 신경 쓰지 않는다.",ref:["K7",5],dir:-1}],
+ f:[{q:"デート費用を分担しようという提案は不快だ。",ref:["J3",0],dir:-1},{q:"相手の話への反応が上手だと言われる。",ref:["J4",0],dir:1}]};
+
+/* ---------------- 문구 (i18n) ---------------- */
+const L={
+kr:{
+ likert:["전혀 그렇지 않다","그렇지 않은 편이다","보통이다","그런 편이다","매우 그렇다"],
+ tag:"국경을 넘는 인연.<br>직업도, 재산도 아닌<br><b style='color:var(--gold-light)'>성격</b>으로 검증된 만남",
+ start:"시작하기",demo:"(데모) 검사 건너뛰고 앱 미리보기",
+ pickTitle:"가입 유형을 선택해 주세요",
+ docTitle:"신분을 확인합니다",docDesc:"서류는 확인 후 즉시 파기됩니다. (탭하여 업로드 — 데모)",
+ docs:[{ic:"🪪",n:"신분증",s:"본인 확인용"},{ic:"💍",n:"혼인관계증명서",s:"독신 여부 확인 (3개월 이내 발급)"}],
+ up:["업로드","업로드 완료 ✓"],next:"다음",
+ mpiTitle:"무스비 성격검사 (MPI)",
+ mpiDesc:"정신건강의학과 전문의가 설계·감수한 심리평가입니다. 각 문장이 자신과 얼마나 일치하는지 솔직하게 응답해 주세요. 정답은 없으며, 잘 보이려는 응답은 타당도 지표가 감지합니다. 소요 약 12~15분.",
+ mpiStart:"검사 시작",back:"← 이전",
+ resTitle:"검증 결과",
+ vPass:["1차 통과 — 화상 인터뷰로 진행","모든 척도가 기준을 충족했습니다. 검사 결과의 일관성을 화상 인터뷰에서 최종 확인합니다."],
+ vHold:["조건부 — 화상 인터뷰에서 확인","기준 미달 척도는 인터뷰에서 행동 사례로 확인 후 판정합니다."],
+ vFail:["불합격","기준 미달 척도가 2개 이상입니다. 6개월 후 재신청이 가능합니다."],
+ vSafe:["불합격 (안전 기준 미달)","존중·비구속 척도가 엄격 기준(3.8) 미만으로, 단독 사유로 가입이 제한됩니다."],
+ vInv:["판정 보류 — 재검사 필요","타당도 지표 기준을 초과했습니다. 솔직한 응답으로 1회 재검사가 안내됩니다."],
+ vlab:(sd,inf,inc)=>`타당도 — 사회적 바람직성 ${sd}/6 · 드문 반응 ${inf}/2 · 비일관성 ${inc}/2쌍`,
+ toIv:"화상 인터뷰 예약하기",retry:"재검사하기",restart:"처음으로",
+ ivTitle:"화상 인터뷰 예약",ivDesc:"전문의가 설계·감수한 프로토콜에 따라 20분간 진행됩니다. 검사 결과의 일관성과 실제 대화 태도를 확인합니다.",
+ ivCard:"전문의 설계·감수 심리평가팀",ivCardD:"영상 통화로 진행되며, 결과는 24시간 내 알림으로 안내됩니다.",
+ slots:[["7/6 (월)","20:00 - 20:20"],["7/8 (수)","21:00 - 21:20"],["7/11 (토)","10:00 - 10:20"]],
+ ivBook:"예약 확정",
+ doneTitle:"인증이 완료되었습니다",doneDesc:"골드 인증 배지가 발급되었습니다.<br>이제 검증된 회원들의 프로필을 만나보세요.<br>모든 대화는 자동으로 번역됩니다.",
+ enter:"무스비 시작하기",
+ pass:"PASS",miss:"기준 미달",safeMiss:"미달 (안전 기준)",evOk:"이벤트 우선 초대",evNo:"일반 초대",cutLab:"기준",
+ sub:"PERSONALITY VERIFIED",tabs:["추천","관심","이벤트","대화","MY"],
+ empty:"오늘의 추천 프로필을 모두 확인했습니다.<br>내일 오전 9시에 새로운 인연이 도착합니다.",
+ vbadge:"✦ 성격 검증 PASS",matchH:"인연이 맺어졌습니다",
+ matchP:n=>`${n} 님도 회원님에게 관심을 보냈어요.<br>두 분 모두 성격 검증을 통과한 회원입니다.`,
+ matchBtn:"메시지 보내기",matchSkip:"계속 둘러보기",
+ likesTitle:'받은 <em>관심</em>',likesHead:'나에게 관심을 보낸 회원 <b style="color:var(--gold)">4명</b>',
+ chatTitle:'대화<em>.</em>',myTitle:'마이<em>페이지</em>',tierTitle:'멤버십 안내',
+ ph:"한국어로 입력하면 일본어로 전달됩니다",sendNote:"🌐 일본어로 번역되어 전송됩니다…",
+ evTitle:'이벤트<em>.</em>',
+ evBanner:s=>`🎪 <b>노는 법은 무스비가 설계합니다.</b><br>호스트가 이끄는 검증 회원 전용 정기 모임 · 내 사교성 ${s} — ${parseFloat(s)>=3.6?'우선 초대 대상 ✦':'일반 초대'}`,
+ evHot:"마감 임박",evJoin:["참가 신청","신청 완료 ✓"],
+ myName:"회원님",myLoc:"서울",myTier:t=>`✦ 성격 검증 ${t} · NOBLESSE`,
+ myCard:["성격 검증 결과","전문의가 설계·감수한 심리평가와 화상 인터뷰를 거친 점수입니다. 프로필에 표시되며 6개월마다 갱신됩니다."],
+ rows:[["온라인 심리평가 (전문의 설계·감수)","완료"],["심층 화상 인터뷰","예약됨"],["신분증·독신 확인","완료"]],
+ memRow:["멤버십","NOBLESSE · 월 39만원 ›"],likeRow:["이번 주 남은 좋아요","12 / 20"],
+ redo:"검사 다시 하기 (데이터 초기화)",
+ tiers:`<div class="tier-card"><div class="tn">CLASSIC</div><div class="tp">월 19만원 <small>/ 3개월 약정</small></div><ul><li>일일 추천 프로필 5명</li><li>주간 좋아요 10회</li><li>자동 번역 채팅</li><li>성격 검증 배지 + 점수 표시</li></ul></div>
+ <div class="tier-card hot"><div class="tag">가장 인기</div><div class="tn">NOBLESSE</div><div class="tp">월 39만원 <small>/ 3개월 약정</small></div><ul><li>일일 추천 15명 + 노출 상향</li><li>주간 좋아요 20회 + 슈퍼 관심 3회</li><li>성격 궁합 리포트</li><li>월 1회 화상 미팅 통역 지원 (30분)</li></ul></div>
+ <div class="tier-card"><div class="tn">BLACK</div><div class="tp">월 89만원 <small>/ 6개월 약정</small></div><ul><li>전담 매니저 1:1 큐레이션 매칭</li><li>전문의 감수 심층 성격 리포트 + 관계 코칭</li><li>무제한 좋아요 · 최상위 노출</li><li>오프라인 만남 일정·통역 동행 지원</li></ul></div>
+ <div class="freenote">💡 여성 회원은 전 기능 무료. 단, 남녀 모두 동일하게 성격 검증을 통과해야 합니다.</div>`,
+ profiles:[
+  {n:"유키",a:28,l:"도쿄 · 호텔리어",ph:UIMG("1494790108377-be9c29b29330",750),c:[["親和性 88",1],["傾聴 91",1],["費用公平 85",1],["한국어 중급",0]]},
+  {n:"아이리",a:31,l:"오사카 · 약사",ph:UIMG("1438761681033-6461ffad8d80",750),c:[["自立性 89",1],["愛嬌 81",1],["費用公平 93",1],["한국어 고급",0]]},
+  {n:"사쿠라",a:26,l:"후쿠오카 · 유치원 교사",ph:UIMG("1544005313-94ddf0286df2",750),c:[["愛嬌 95",1],["穏やか 86",1],["ソーシャル 90",1],["요리 자신 있음",0]]},
+  {n:"미나",a:33,l:"나고야 · 간호사",ph:UIMG("1517841905240-472988babdf9",750),c:[["親和性 93",1],["傾聴 87",1],["ソーシャル 85",1],["온천 여행",0]]}],
+ likes:[
+  {n:"린 · 29 · 오사카",ph:UIMG("1529626455594-4ff0802cfb7e",400),st:"NEW"},
+  {n:"마오 · 31 · 도쿄",ph:UIMG("1524504388940-b1c1722653e1",400)},
+  {n:"유이 · 27 · 후쿠오카",ph:UIMG("1488426862026-3ee34a7d66df",400),st:"NEW"},
+  {n:"사키 · 33 · 요코하마",ph:UIMG("1534528741775-53994a69daeb",400)}],
+ chats:[
+  {ph:UIMG("1508214751196-bcfd4ca60f91",200),n:"아야카",m:"週末は京都に行く予定です 🍁",t:"오후 9:41",u:2,open:true},
+  {ph:UIMG("1531123897727-8f129e1688ce",200),n:"미유",m:"사진 감사합니다! 풍경이 멋지네요",t:"오후 2:10"},
+  {ph:UIMG("1502823403499-6ccfcf4fb453",200),n:"하루카",m:"はじめまして。よろしくお願いします",t:"어제"}],
+ room:{ph:UIMG("1508214751196-bcfd4ca60f91",200),n:"아야카 · 30",s:"● 지금 접속 중 · 도쿄",note:"🌐 자동 번역이 켜져 있습니다 (한국어 ↔ 일본어)",
+  msgs:[{who:"them",t:"안녕하세요! 프로필의 자상함 점수가 인상적이었어요. 인터뷰까지 통과하셨다니 믿음이 가요.",o:"こんにちは！プロフィールの思いやりスコアが印象的でした。"},
+   {who:"me",t:"반갑습니다, 아야카 씨. 저도 검사받으면서 저 자신에 대해 많이 알게 됐어요.",o:"はじめまして、あやかさん。"},
+   {who:"them",t:"주말에는 교토에 갈 예정이에요 🍁 한국에 가면 꼭 가봐야 할 곳이 있을까요?",o:"週末は京都に行く予定です 🍁"}]},
+ myPh:UIMG("1560250097-0b93528c311a",200),
+ events:[
+  {d1:"7/18",d2:"토 19:00",t:"한일 보드게임 나이트 🎲",desc:"통역 호스트 진행 · 팀전 게임 4종 · 자리 로테이션",city:"서울 성수",m:"남 8/10 · 여 9/10",cond:"사교성 75+",price:"남 5만원 · 여 무료",hot:true},
+  {d1:"8/1",d2:"토 18:00",t:"K-푸드 쿠킹 클래스 🍳",desc:"2인 1조 요리 미션 후 시식 파티 · 조 편성은 궁합 기반",city:"도쿄 시부야",m:"남 6/8 · 여 8/8",cond:"사교성 70+",price:"남 3만원 · 여 무료"},
+  {d1:"8/22",d2:"토 17:00",t:"선셋 요트 파티 ⛵",desc:"한강 요트 2시간 · 1:1 스피드 토크 세션",city:"서울 여의도",m:"남 4/12 · 여 6/12",cond:"사교성 70+",price:"남 12만원 · 여 무료"},
+  {d1:"9월",d2:"예정",t:"한일 가을 운동회 🏃",desc:"팀 대항 미니게임 · 시상식 후 뒤풀이",city:"후쿠오카",m:"모집 예정",cond:"전 회원",price:"미정"}]
+},
+jp:{
+ likert:["全く違う","違う方だ","どちらとも言えない","そう思う方だ","とてもそう思う"],
+ tag:"国境を越えるご縁。<br>職業でも年収でもなく<br><b style='color:var(--gold-light)'>性格</b>で審査される出会い",
+ start:"はじめる",demo:"（デモ）検査をスキップしてアプリを見る",
+ pickTitle:"会員タイプを選択してください",
+ docTitle:"本人確認を行います",docDesc:"書類は確認後、直ちに破棄されます。（タップしてアップロード — デモ）",
+ docs:[{ic:"🪪",n:"身分証",s:"本人確認用"},{ic:"💍",n:"独身証明書",s:"3ヶ月以内発行"}],
+ up:["アップロード","完了 ✓"],next:"次へ",
+ mpiTitle:"MUSUBI 性格検査 (MPI)",
+ mpiDesc:"精神科専門医が設計・監修した心理評価です。各文が自分にどのくらい当てはまるか、正直にお答えください。正解はありません。良く見せようとする回答は妥当性指標が検知します。所要約12〜15分。",
+ mpiStart:"検査をはじめる",back:"← 戻る",
+ resTitle:"審査結果",
+ vPass:["一次通過 — ビデオ面接へ","すべての尺度が基準を満たしました。回答の一貫性をビデオ面接で最終確認します。"],
+ vHold:["条件付き — ビデオ面接で確認","基準未達の尺度は面接で行動事例を確認のうえ判定します。"],
+ vFail:["不合格","基準未達の尺度が2つ以上です。6ヶ月後に再申請できます。"],
+ vSafe:["不合格","基準未達の尺度があります。"],
+ vInv:["判定保留 — 再検査が必要です","妥当性指標が基準を超えました。正直な回答で1回の再検査をご案内します。"],
+ vlab:(sd,inf,inc)=>`妥当性 — 社会的望ましさ ${sd}/6 · まれな回答 ${inf}/2 · 非一貫性 ${inc}/2組`,
+ toIv:"ビデオ面接を予約する",retry:"再検査する",restart:"最初へ",
+ ivTitle:"ビデオ面接の予約",ivDesc:"専門医が設計・監修したプロトコルに基づき、20分間行います。回答の一貫性と実際の会話の様子を確認します。",
+ ivCard:"専門医設計・監修 心理評価チーム",ivCardD:"ビデオ通話で行われ、結果は24時間以内に通知されます。",
+ slots:[["7/6 (月)","20:00 - 20:20"],["7/8 (水)","21:00 - 21:20"],["7/11 (土)","10:00 - 10:20"]],
+ ivBook:"予約を確定する",
+ doneTitle:"認証が完了しました",doneDesc:"ゴールド認証バッジが発行されました。<br>審査を通過した会員のプロフィールをご覧ください。<br>会話はすべて自動翻訳されます。",
+ enter:"MUSUBIをはじめる",
+ pass:"PASS",miss:"基準未達",safeMiss:"未達",evOk:"イベント優先招待",evNo:"通常招待",cutLab:"基準",
+ sub:"性格認証マッチ",tabs:["おすすめ","いいね","イベント","トーク","マイ"],
+ empty:"本日のおすすめはすべて確認しました。<br>明日の朝9時に新しいご縁が届きます。",
+ vbadge:"✦ 性格認証 PASS",matchH:"ご縁が結ばれました",
+ matchP:n=>`${n}さんもあなたに関心を寄せています。<br>お二人とも性格審査を通過した会員です。`,
+ matchBtn:"メッセージを送る",matchSkip:"他の方も見る",
+ likesTitle:'もらった<em>いいね</em>',likesHead:'あなたに関心を寄せた会員 <b style="color:var(--gold)">6名</b>',
+ chatTitle:'トーク<em>.</em>',myTitle:'マイ<em>ページ</em>',tierTitle:'メンバーシップ',
+ ph:"日本語で入力すると韓国語で届きます",sendNote:"🌐 韓国語に翻訳して送信されます…",
+ evTitle:'イベント<em>.</em>',
+ evBanner:s=>`🎪 <b>遊び方はMUSUBIがデザインします。</b><br>ホストが進行する認証会員限定イベント · あなたのソーシャル指数 ${s} — ${parseFloat(s)>=3.6?'優先招待 ✦':'通常招待'}`,
+ evHot:"締切間近",evJoin:["参加申込","申込完了 ✓"],
+ myName:"会員さま",myLoc:"東京",myTier:t=>`✦ 性格認証 ${t} · 女性会員 無料`,
+ myCard:["性格認証の結果","専門医が設計・監修した心理評価とビデオ面接によるスコアです。プロフィールに表示され、6ヶ月ごとに更新されます。"],
+ rows:[["オンライン心理評価（専門医設計・監修）","完了"],["ビデオ面接","予約済み"],["身分証・独身証明","完了"]],
+ memRow:["メンバーシップ","無料 ›"],likeRow:["今週の残りいいね","無制限"],
+ redo:"検査をやり直す（データ初期化）",
+ tiers:`<div class="freenote">🌸 女性会員はすべての機能を無料でご利用いただけます。ただし、男女ともに同じ性格審査を通過する必要があります。</div>
+ <div class="tier-card hot"><div class="tn">安心・安全への取り組み</div><ul><li>専門医が設計・監修した性格評価を男女全会員が通過（通過率 約58%）</li><li>男性会員は「思いやり・頼もしさ・積極性」など8尺度で審査</li><li>全会員の独身証明書を確認</li><li>24時間の通報・ブロック対応</li></ul></div>`,
+ profiles:[
+  {n:"ジュノ",a:36,l:"ソウル · 会社経営",ph:UIMG("1507003211169-0a1dd7228f2d",750),c:[["思いやり 88",1],["優しさ 86",1],["リード力 83",1],["日本語 中級",0]]},
+  {n:"ミンス",a:34,l:"ソウル · エンジニア",ph:UIMG("1500648767791-00dcc994a43e",750),c:[["愛情表現 90",1],["思いやり 91",1],["束縛しない 94",1]]},
+  {n:"テヤン",a:38,l:"釜山 · 自営業",ph:UIMG("1506794778202-cad84cf45f1d",750),c:[["頼もしさ 90",1],["優しさ 82",1],["ソーシャル 89",1],["料理が趣味",0]]},
+  {n:"ヒョヌ",a:35,l:"ソウル · 会社員",ph:UIMG("1519085360753-af0119f7cbe7",750),c:[["積極性 92",1],["リード力 88",1],["愛情表現 85",1],["日本駐在経験",0]]}],
+ likes:[
+  {n:"ソンミン · 37 · ソウル",ph:UIMG("1492562080023-ab3db95bfbce",400),st:"NEW"},
+  {n:"ジェヒョン · 33 · 大邱",ph:UIMG("1472099645785-5658abf4ff4e",400),st:"NEW"},
+  {n:"ドンウク · 40 · ソウル",ph:UIMG("1552374196-c4e7ffc6e126",400)},
+  {n:"ジュンソ · 35 · 仁川",ph:UIMG("1463453091185-61582044d556",400)}],
+ chats:[
+  {ph:UIMG("1507003211169-0a1dd7228f2d",200),n:"ジュノ",m:"来月、東京へ出張で行く予定です",t:"21:15",u:1,open:true},
+  {ph:UIMG("1500648767791-00dcc994a43e",200),n:"ミンス",m:"週末はよく漢江を散歩しています",t:"昨日"}],
+ room:{ph:UIMG("1507003211169-0a1dd7228f2d",200),n:"ジュノ · 36",s:"● オンライン · ソウル",note:"🌐 自動翻訳がオンです（日本語 ↔ 韓国語）",
+  msgs:[{who:"them",t:"はじめまして。プロフィールを拝見しました。",o:"안녕하세요. 프로필 잘 봤습니다."},
+   {who:"me",t:"はじめまして！思いやりスコア88、すごいですね。",o:"반갑습니다! 자상함 점수 88, 대단하네요."},
+   {who:"them",t:"来月、東京へ出張で行く予定です。よろしければお茶でもいかがですか？",o:"다음 달에 도쿄 출장 예정입니다."}]},
+ myPh:UIMG("1508214751196-bcfd4ca60f91",200),
+ events:[
+  {d1:"7/18",d2:"土 19:00",t:"日韓ボードゲームナイト 🎲",desc:"通訳ホスト進行 · チーム戦ゲーム4種 · 席替えで全員と交流",city:"ソウル 聖水",m:"男 8/10 · 女 9/10",cond:"ソーシャル 75+",price:"女性 無料（渡航別）",hot:true},
+  {d1:"8/1",d2:"土 18:00",t:"K-フード料理教室 🍳",desc:"2人1組の料理ミッション後、試食パーティー",city:"東京 渋谷",m:"男 6/8 · 女 8/8",cond:"ソーシャル 70+",price:"女性 無料"},
+  {d1:"8/22",d2:"土 17:00",t:"サンセットヨットパーティー ⛵",desc:"漢江ヨット2時間 · 1:1スピードトーク付き",city:"ソウル 汝矣島",m:"男 4/12 · 女 6/12",cond:"ソーシャル 70+",price:"女性 無料（渡航別）"},
+  {d1:"9月",d2:"予定",t:"日韓秋の運動会 🏃",desc:"チーム対抗ミニゲーム · 表彰式後の打ち上げ",city:"福岡",m:"募集予定",cond:"全会員",price:"未定"}]
+}};
+
+/* ---------------- 상태 ---------------- */
+let VER=null, LANG='kr', SEQ=[], ANS=[], pos=0, upDocs=new Set(), slotSel=-1, idx=0, RESULT=null;
+const $=id=>document.getElementById(id);
+const T=()=>L[LANG];
+
+function save(){try{localStorage.setItem('musubi',JSON.stringify({VER,LANG,RESULT}));}catch(e){}}
+function load(){try{return JSON.parse(localStorage.getItem('musubi'));}catch(e){return null;}}
+function reset(){try{localStorage.removeItem('musubi');}catch(e){} location.reload();}
+
+/* ---------------- 온보딩 ---------------- */
+function splash(){
+  $('ob').innerHTML=`<div class="splash">
+    <div class="mark">🎀</div><div class="bn">MU<em>SUBI</em></div><div class="bs">結び · 무스비</div>
+    <div class="tg">${L.kr.tag}</div></div>
+    <div class="ofoot"><button class="goldbtn" onclick="pickVer()">${L.kr.start} / ${L.jp.start}</button>
+    <button class="ghostbtn" onclick="demoEnter('m')">${L.kr.demo}</button></div>`;
+}
+function pickVer(){
+  $('ob').innerHTML=`<div class="step">STEP 1 / 5</div><h2>${L.kr.pickTitle}<br><span style="font-size:14px;color:var(--muted)">${L.jp.pickTitle}</span></h2>
+  <div class="obody" style="padding-top:12px;">
+    <button class="verbtn" onclick="startVer('m')"><span class="ic">🤵</span><span><b>남성 회원 (한국어)</b><span>MPI-M 8개 척도 · 74문항 · 유료 멤버십</span></span></button>
+    <button class="verbtn" onclick="startVer('f')"><span class="ic">👰</span><span><b>女性会員（日本語）</b><span>MPI-F 7尺度 · 66問 · 全機能無料</span></span></button>
+  </div><button class="backlink" onclick="splash()">‹ ${L.kr.back.replace('← ','')}</button>`;
+}
+function startVer(v){VER=v;LANG=v==='m'?'kr':'jp';upDocs=new Set();docStep();}
+function docStep(){
+  const t=T();
+  $('ob').innerHTML=`<div class="prog"><div class="bar" style="width:25%"></div></div>
+  <div class="step">STEP 2 / 5</div><h2>${t.docTitle}</h2><div class="desc">${t.docDesc}</div>
+  <div class="obody">${t.docs.map((d,k)=>`
+    <div class="docrow ${upDocs.has(k)?'up':''}" onclick="upDoc(${k})">
+      <div class="di">${d.ic}</div><div><div class="dn">${d.n}</div><div class="ds">${d.s}</div></div>
+      <div class="dst">${upDocs.has(k)?t.up[1]:t.up[0]}</div></div>`).join('')}</div>
+  <div class="ofoot"><button class="goldbtn" onclick="mpiIntro()" ${upDocs.size<2?'disabled':''}>${t.next}</button></div>`;
+}
+function upDoc(k){upDocs.add(k);docStep();}
+function mpiIntro(){
+  const t=T();
+  $('ob').innerHTML=`<div class="prog"><div class="bar" style="width:40%"></div></div>
+  <div class="step">STEP 3 / 5</div><h2>${t.mpiTitle}</h2><div class="desc">${t.mpiDesc}</div>
+  <div class="obody"><div class="drcard"><span class="em">🩺</span><span><b>${t.ivCard}</b><span>MPI v0.1 — ${VER==='m'?'74':'66'}${LANG==='kr'?'문항':'問'}</span></span></div></div>
+  <div class="ofoot"><button class="goldbtn" onclick="startTest()">${t.mpiStart}</button></div>`;
+}
+
+/* ---------------- MPI 검사 ---------------- */
+function buildSeq(v){
+  const sc=SCALES[v],lang=v==='m'?'kr':'jp',seq=[];
+  for(let r=0;r<8;r++)for(let s=0;s<sc.length;s++)
+    seq.push({t:sc[s].it[r][0],rev:sc[s].it[r][1],scale:sc[s].c,idx:r,kind:"c"});
+  SD[lang].forEach((t,k)=>seq.splice(9+k*10,0,{t,kind:"sd",idx:k}));
+  seq.splice(24,0,{t:INF[lang][0],kind:"inf",idx:0});
+  seq.splice(48,0,{t:INF[lang][1],kind:"inf",idx:1});
+  INC[v].forEach((o,k)=>seq.push({t:o.q,kind:"inc",idx:k}));
+  return seq;
+}
+function startTest(){SEQ=buildSeq(VER);ANS=new Array(SEQ.length).fill(0);pos=0;renderQ();}
+function renderQ(){
+  const t=T(),q=SEQ[pos],pct=40+Math.round(pos/SEQ.length*45);
+  $('ob').innerHTML=`<div class="prog"><div class="bar" style="width:${pct}%"></div></div>
+  <div class="pnum">${pos+1} / ${SEQ.length}</div>
+  <div class="qtext">${q.t}</div>
+  <div class="obody"><div class="lik">${t.likert.map((l,k)=>`
+    <div class="lk ${ANS[pos]===k+1?'sel':''}" onclick="pick(${k+1})"><span class="n">${k+1}</span>${l}</div>`).join('')}</div>
+  <button class="backlink" onclick="backQ()" ${pos===0?'style="visibility:hidden"':''}>${t.back}</button></div>`;
+}
+function pick(v){ANS[pos]=v;setTimeout(()=>{if(pos<SEQ.length-1){pos++;renderQ();}else score();},140);}
+function backQ(){if(pos>0){pos--;renderQ();}}
+
+function score(){
+  const sc=SCALES[VER],t=T();
+  const scores=sc.map(s=>{
+    const vals=SEQ.map((q,i)=>q.kind==="c"&&q.scale===s.c?(q.rev?6-ANS[i]:ANS[i]):null).filter(x=>x!==null);
+    return {c:s.c,n:s.n,cut:s.cut,gate:s.gate,mean:vals.reduce((a,b)=>a+b,0)/vals.length};
+  });
+  const sdHi=SEQ.filter((q,i)=>q.kind==="sd"&&ANS[i]>=4).length;
+  const infHi=SEQ.filter((q,i)=>q.kind==="inf"&&ANS[i]>=4).length;
+  const incFlags=INC[VER].map((o,k)=>{
+    const vIdx=SEQ.findIndex(q=>q.kind==="inc"&&q.idx===k);
+    const refItem=SCALES[VER].find(s=>s.c===o.ref[0]).it[o.ref[1]];
+    const refIdx=SEQ.findIndex(q=>q.kind==="c"&&q.scale===o.ref[0]&&q.idx===o.ref[1]);
+    const refKeyed=refItem[1]?6-ANS[refIdx]:ANS[refIdx];
+    const vKeyed=o.dir===-1?6-ANS[vIdx]:ANS[vIdx];
+    return Math.abs(vKeyed-refKeyed)>=2;
+  });
+  const invalid=sdHi>=5||infHi>=1||incFlags.every(x=>x);
+  const gateFails=scores.filter(s=>s.gate===1&&s.mean<s.cut).length;
+  const safeFail=scores.some(s=>s.gate===2&&s.mean<s.cut);
+  let verdict;
+  if(invalid)verdict="invalid";
+  else if(safeFail)verdict="safefail";
+  else if(gateFails>=2)verdict="fail";
+  else if(gateFails===1||sdHi===4)verdict="hold";
+  else verdict="pass";
+  RESULT={scores,verdict,sdHi,infHi,incN:incFlags.filter(x=>x).length,date:new Date().toISOString().slice(0,10)};
+  resultScreen();
+}
+function resultScreen(){
+  const t=T(),r=RESULT;
+  const vmap={pass:["v-pass",...t.vPass],hold:["v-hold",...t.vHold],fail:["v-fail",...t.vFail],safefail:["v-fail",...t.vSafe],invalid:["v-hold",...t.vInv]};
+  const[cls,ti,de]=vmap[r.verdict];
+  const ok=r.verdict==="pass"||r.verdict==="hold";
+  $('ob').innerHTML=`<div class="prog"><div class="bar" style="width:90%"></div></div>
+  <div class="step">STEP 4 / 5</div><h2>${t.resTitle}</h2>
+  <div class="obody">
+  <div class="verdict ${cls}">${ti}<small>${de}</small></div>
+  ${r.scores.map(s=>{
+    const pass=s.mean>=s.cut;
+    const pill=s.gate===0?(pass?`<span class="pill p-ok">${t.evOk}</span>`:`<span class="pill p-warn">${t.evNo}</span>`)
+      :(pass?`<span class="pill p-ok">${t.pass}</span>`:(s.gate===2?`<span class="pill p-bad">${t.safeMiss}</span>`:`<span class="pill p-warn">${t.miss}</span>`));
+    return `<div class="scrow"><div class="st1"><span>${s.n}${pill}</span><span class="sv">${s.mean.toFixed(2)}</span></div>
+      <div class="sbar"><div class="sfill" style="width:${(s.mean-1)/4*100}%;background:${pass?'linear-gradient(90deg,#8fae7c,#5f9c7a)':'linear-gradient(90deg,#b0564f,#8a423d)'}"></div>
+      <div class="cut" style="left:${(s.cut-1)/4*100}%"></div></div>
+      <div class="st2"><span>1.0</span><span>${t.cutLab} ${s.cut}</span><span>5.0</span></div></div>`;}).join('')}
+  <div class="vflag">${t.vlab(r.sdHi,r.infHi,r.incN)}</div></div>
+  <div class="ofoot">${ok?`<button class="goldbtn" onclick="ivStep()">${t.toIv}</button>`
+    :r.verdict==="invalid"?`<button class="goldbtn" onclick="startTest()">${t.retry}</button>`
+    :`<button class="goldbtn" onclick="location.reload()">${t.restart}</button>`}
+  </div>`;
+}
+function ivStep(){
+  const t=T();slotSel=-1;renderIv();
+}
+function renderIv(){
+  const t=T();
+  $('ob').innerHTML=`<div class="prog"><div class="bar" style="width:95%"></div></div>
+  <div class="step">STEP 5 / 5</div><h2>${t.ivTitle}</h2><div class="desc">${t.ivDesc}</div>
+  <div class="obody">
+    <div class="drcard"><span class="em">🎥</span><span><b>${t.ivCard}</b><span>${t.ivCardD}</span></span></div>
+    ${t.slots.map((s,k)=>`<div class="slot ${slotSel===k?'sel':''}" onclick="slotSel=${k};renderIv()"><b>${s[0]}</b><span>${s[1]}</span></div>`).join('')}
+  </div>
+  <div class="ofoot"><button class="goldbtn" onclick="doneStep()" ${slotSel<0?'disabled':''}>${t.ivBook}</button></div>`;
+}
+function doneStep(){
+  const t=T();save();
+  $('ob').innerHTML=`<div class="prog"><div class="bar" style="width:100%"></div></div>
+  <div class="obody" style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
+    <div style="font-size:52px;margin-bottom:18px;">✦</div>
+    <h2>${t.doneTitle}</h2>
+    <div class="desc" style="margin-top:10px;">${t.doneDesc}</div></div>
+  <div class="ofoot"><button class="goldbtn" onclick="enterApp()">${t.enter}</button></div>`;
+}
+function demoEnter(v){
+  VER=v;LANG=v==='m'?'kr':'jp';
+  RESULT={scores:SCALES[v].map(s=>({c:s.c,n:s.n,cut:s.cut,gate:s.gate,mean:4.1})),verdict:"pass",sdHi:1,infHi:0,incN:0,date:new Date().toISOString().slice(0,10)};
+  save();enterApp();
+}
+
+/* ---------------- 메인 앱 ---------------- */
+function enterApp(){
+  $('onb').classList.remove('active');
+  $('tabbar').classList.add('on');
+  renderApp();showScreen('scr-discover');setTab('scr-discover');
+}
+function renderApp(){
+  const t=T();idx=0;
+  $('d-sub').textContent=t.sub;
+  document.querySelectorAll('.tab .tl').forEach((e,k)=>e.textContent=t.tabs[k]);
+  $('empty-txt').innerHTML=t.empty;
+  $('l-title').innerHTML=t.likesTitle;$('l-head').innerHTML=t.likesHead;
+  $('l-grid').innerHTML=t.likes.map(x=>`<div class="mcell" style="background-image:url('${x.ph}')"><div class="gr"></div>${x.st?`<div class="st">${x.st}</div>`:''}<div class="nm">${x.n}</div></div>`).join('');
+  $('c-title').innerHTML=t.chatTitle;
+  $('c-list').innerHTML=t.chats.map(c=>`
+    <div class="citem" ${c.open?'onclick="showScreen(\'scr-room\')"':''}>
+      <div class="avatar" style="background-image:url('${c.ph}')"></div>
+      <div class="cc"><div class="cn">${c.n} <span style="font-size:10px;color:var(--gold)">✦</span></div><div class="cm">${c.m}</div></div>
+      <div style="text-align:right"><div class="ct">${c.t}</div>${c.u?`<div class="unread">${c.u}</div>`:''}</div></div>`).join('');
+  const R=t.room;
+  $('r-avatar').style.backgroundImage=`url('${R.ph}')`;
+  $('r-name').textContent=R.n;$('r-status').textContent=R.s;
+  $('msgs').innerHTML=`<div class="trnote">${R.note}</div>`+R.msgs.map(m=>`<div class="msg ${m.who}">${m.t}<div class="orig">${m.o}</div></div>`).join('');
+  $('minput').placeholder=t.ph;
+  renderMy();
+  $('t-title').textContent=t.tierTitle;$('t-body').innerHTML=t.tiers;
+  const soc=RESULT.scores.find(s=>s.gate===0);
+  $('e-title').innerHTML=t.evTitle;$('e-banner').innerHTML=t.evBanner(soc.mean.toFixed(1));
+  $('e-list').innerHTML=t.events.map(e=>`
+    <div class="evcard ${e.hot?'hot':''}">${e.hot?`<div class="tag">${t.evHot}</div>`:''}
+      <div class="evdate"><b>${e.d1}</b><span>${e.d2}</span></div>
+      <div class="evc"><div class="evt">${e.t}</div><div class="evd">${e.desc}</div>
+        <div class="evm">📍 ${e.city} · 👥 ${e.m}</div><div class="evm">✦ ${e.cond} · 💳 ${e.price}</div>
+        <button class="evbtn" onclick="this.textContent='${t.evJoin[1]}';this.classList.add('joined')">${t.evJoin[0]}</button></div></div>`).join('');
+  $('match-h').textContent=t.matchH;$('match-btn').textContent=t.matchBtn;$('match-skip').textContent=t.matchSkip;
+  renderCards();
+}
+function renderMy(){
+  const t=T(),r=RESULT;
+  const vt=r.verdict==="pass"?"PASS":r.verdict==="hold"?(LANG==='kr'?"조건부":"条件付き"):"—";
+  $('m-title').innerHTML=t.myTitle;
+  $('m-body').innerHTML=`
+    <div class="myhead"><div class="avatar" style="background-image:url('${t.myPh}')"></div>
+      <div><h3>${t.myName} · ${t.myLoc}</h3><div class="tier">${t.myTier(vt)}</div></div></div>
+    <div class="vcard"><div class="vt">${t.myCard[0]} <span style="float:right">✦</span></div><div class="vs">${t.myCard[1]} (${r.date})</div>
+      ${r.scores.map(s=>{const pass=s.mean>=s.cut;
+        return `<div class="scrow"><div class="st1"><span>${s.n}${pass?`<span class="pill p-ok">${t.pass}</span>`:`<span class="pill p-warn">${t.miss}</span>`}</span><span class="sv">${s.mean.toFixed(2)}</span></div>
+        <div class="sbar"><div class="sfill" style="width:${(s.mean-1)/4*100}%;background:linear-gradient(90deg,#8fae7c,#5f9c7a)"></div><div class="cut" style="left:${(s.cut-1)/4*100}%"></div></div></div>`;}).join('')}
+    </div>
+    ${t.rows.map(x=>`<div class="vrow"><span class="lab">${x[0]}</span><span class="pill p-ok">${x[1]}</span></div>`).join('')}
+    <div class="vrow link" onclick="showScreen('scr-tier')"><span class="lab">${t.memRow[0]}</span><span style="color:var(--gold);font-size:13px">${t.memRow[1]}</span></div>
+    <div class="vrow"><span class="lab">${t.likeRow[0]}</span><span style="font-size:13px">${t.likeRow[1]}</span></div>
+    <button class="ghostbtn" onclick="reset()" style="color:#8d7f6d;">${t.redo}</button>`;
+}
+function renderCards(){
+  const t=T(),wrap=$('cardwrap');
+  wrap.querySelectorAll('.pcard').forEach(e=>e.remove());
+  for(let k=Math.min(idx+1,t.profiles.length-1);k>=idx;k--){
+    if(k>=t.profiles.length)continue;
+    const p=t.profiles[k],d=document.createElement('div');
+    d.className='pcard';d.id='card'+k;
+    if(k>idx){d.style.transform='scale(.95) translateY(10px)';d.style.filter='brightness(.6)';}
+    d.innerHTML=`<div class="photo" style="background-image:url('${p.ph}')"></div><div class="grad"></div>
+      <div class="vbadge">${t.vbadge}</div>
+      <div class="pinfo"><h2>${p.n}<span class="age">${p.a}</span></h2><div class="loc">📍 ${p.l}</div>
+      <div class="chips">${p.c.map(x=>`<span class="chip ${x[1]?'score':''}">${x[0]}</span>`).join('')}</div></div>`;
+    wrap.appendChild(d);
+  }
+  $('empty').style.display=idx>=t.profiles.length?'flex':'none';
+}
+function swipe(like){
+  const t=T();
+  if(idx>=t.profiles.length)return;
+  const card=$('card'+idx),name=t.profiles[idx].n;
+  card.classList.add(like?'gone-r':'gone-l');
+  idx++;
+  setTimeout(()=>{renderCards();
+    if(like&&Math.random()<0.6){$('matchname').innerHTML=t.matchP(name);$('matchov').classList.add('show');}},320);
+}
+function hideMatch(){$('matchov').classList.remove('show');}
+function toMsg(){hideMatch();showScreen('scr-chats');setTab('scr-chats');}
+function go(el){setTab(el.dataset.s);showScreen(el.dataset.s);}
+function setTab(s){document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.s===s));}
+function showScreen(s){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));$(s).classList.add('active');}
+function sendMsg(){
+  const inp=$('minput');if(!inp.value.trim())return;
+  const m=document.createElement('div');m.className='msg me';
+  m.innerHTML=inp.value+`<div class="orig">${T().sendNote}</div>`;
+  $('msgs').appendChild(m);inp.value='';$('msgs').scrollTop=99999;
+}
+
+/* ---------------- 부팅 ---------------- */
+const saved=load();
+if(saved&&saved.RESULT&&(saved.RESULT.verdict==="pass"||saved.RESULT.verdict==="hold")){
+  VER=saved.VER;LANG=saved.LANG;RESULT=saved.RESULT;enterApp();
+}else{splash();}
+</script>
+</body>
+</html>

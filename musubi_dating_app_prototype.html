@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MUSUBI 무스비 — 성격 검증 한일 데이팅</title>
+<style>
+  :root{
+    --bg:#0d0b09;
+    --surface:#171310;
+    --surface2:#211b16;
+    --gold:#c9a45c;
+    --gold-light:#e6cf9a;
+    --text:#f2ece1;
+    --muted:#9c8f7d;
+    --danger:#b0564f;
+    --ok:#5f9c7a;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;font-family:'Apple SD Gothic Neo','Noto Sans KR','Hiragino Sans','Pretendard',sans-serif;}
+  body{background:linear-gradient(160deg,#0a0806,#141008);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;color:var(--text);}
+  .stage{display:flex;gap:48px;align-items:center;flex-wrap:wrap;justify-content:center;}
+  .pitch{max-width:340px;}
+  .pitch h1{font-size:30px;font-weight:800;letter-spacing:-.5px;margin-bottom:6px;}
+  .pitch h1 span{color:var(--gold);}
+  .pitch .jp{color:var(--muted);font-size:13px;letter-spacing:4px;margin-bottom:20px;}
+  .pitch p{color:var(--muted);font-size:14px;line-height:1.75;margin-bottom:14px;}
+  .pitch .feat{display:flex;gap:10px;align-items:flex-start;margin-bottom:12px;}
+  .pitch .feat .dot{width:6px;height:6px;border-radius:50%;background:var(--gold);margin-top:8px;flex-shrink:0;}
+  .pitch .feat b{color:var(--text);font-weight:600;}
+  .modes{display:flex;gap:8px;margin:18px 0 8px;}
+  .modebtn{flex:1;padding:11px 8px;border-radius:12px;border:1px solid #3a3128;background:var(--surface);color:var(--muted);font-size:12.5px;cursor:pointer;font-weight:600;}
+  .modebtn.on{border-color:var(--gold);color:var(--gold-light);background:rgba(201,164,92,.1);}
+  .restart{width:100%;padding:10px;border-radius:12px;border:1px dashed #3a3128;background:none;color:#6b5f4f;font-size:12px;cursor:pointer;}
+
+  /* ===== phone frame ===== */
+  .phone{width:375px;height:760px;background:var(--bg);border-radius:44px;border:1px solid #3a3128;
+    box-shadow:0 0 0 10px #1c1712,0 40px 80px rgba(0,0,0,.7);overflow:hidden;position:relative;flex-shrink:0;}
+  .notch{position:absolute;top:12px;left:50%;transform:translateX(-50%);width:120px;height:26px;background:#000;border-radius:14px;z-index:80;}
+  .screen{position:absolute;inset:0;padding-top:48px;padding-bottom:76px;display:none;flex-direction:column;overflow:hidden;}
+  .screen.active{display:flex;}
+
+  /* ===== tab bar ===== */
+  .tabbar{position:absolute;bottom:0;left:0;right:0;height:76px;background:rgba(13,11,9,.96);border-top:1px solid #2a231c;display:flex;z-index:40;backdrop-filter:blur(8px);}
+  .tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:#6b5f4f;font-size:10px;padding-bottom:10px;}
+  .tab svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.7;}
+  .tab.on{color:var(--gold);}
+  .tab .badge{position:relative;}
+  .tab .badge::after{content:'';position:absolute;top:-2px;right:-4px;width:8px;height:8px;border-radius:50%;background:var(--danger);}
+
+  .apptitle{display:flex;align-items:center;justify-content:space-between;padding:10px 20px 12px;}
+  .apptitle .logo{font-weight:800;font-size:19px;letter-spacing:1px;}
+  .apptitle .logo em{color:var(--gold);font-style:normal;}
+  .apptitle .sub{font-size:10px;color:var(--muted);letter-spacing:2px;}
+  .icbtn{width:34px;height:34px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;color:var(--gold);cursor:pointer;font-size:15px;}
+
+  /* ===== discover / cards ===== */
+  .cardwrap{flex:1;position:relative;padding:4px 16px 10px;}
+  .pcard{position:absolute;inset:4px 16px 10px;border-radius:24px;overflow:hidden;background:var(--surface);
+    border:1px solid #2e2620;box-shadow:0 18px 40px rgba(0,0,0,.5);display:flex;flex-direction:column;transition:transform .35s ease,opacity .35s ease;}
+  .pcard.gone-l{transform:translateX(-120%) rotate(-8deg);opacity:0;}
+  .pcard.gone-r{transform:translateX(120%) rotate(8deg);opacity:0;}
+  .photo{flex:1;position:relative;display:flex;align-items:center;justify-content:center;}
+  .photo .initial{font-size:76px;font-weight:800;color:rgba(255,255,255,.25);letter-spacing:2px;}
+  .photo .grad{position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,rgba(10,8,6,.92) 100%);}
+  .vbadge{position:absolute;top:16px;left:16px;background:rgba(13,11,9,.75);border:1px solid var(--gold);color:var(--gold-light);
+    font-size:11px;padding:5px 10px;border-radius:20px;display:flex;align-items:center;gap:5px;backdrop-filter:blur(4px);}
+  .pinfo{position:absolute;left:20px;right:20px;bottom:18px;}
+  .pinfo h2{font-size:24px;font-weight:700;display:flex;align-items:baseline;gap:8px;}
+  .pinfo h2 .age{font-size:19px;font-weight:400;color:#d8cdbb;}
+  .pinfo .loc{font-size:12.5px;color:#cbbfa9;margin-top:5px;display:flex;align-items:center;gap:6px;}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;}
+  .chip{font-size:11px;padding:4px 10px;border-radius:14px;background:rgba(201,164,92,.16);border:1px solid rgba(201,164,92,.4);color:var(--gold-light);}
+  .chip.score{background:rgba(95,156,122,.16);border-color:rgba(95,156,122,.45);color:#a9d4bc;}
+  .actions{display:flex;justify-content:center;gap:26px;padding:14px 0 6px;}
+  .act{width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:24px;
+    border:1px solid #332b22;background:var(--surface2);transition:transform .15s;}
+  .act:active{transform:scale(.88);}
+  .act.pass{color:#8d7f6d;}
+  .act.like{background:linear-gradient(135deg,#c9a45c,#a07c33);color:#171008;border:none;box-shadow:0 8px 24px rgba(201,164,92,.35);}
+  .act.sml{width:46px;height:46px;font-size:17px;color:#7fa3c0;align-self:center;}
+  .empty{position:absolute;inset:4px 16px 10px;border-radius:24px;border:1px dashed #3a3128;display:none;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--muted);font-size:13px;text-align:center;padding:30px;}
+  .empty .big{font-size:40px;}
+
+  /* ===== match overlay ===== */
+  .matchov{position:absolute;inset:0;background:rgba(8,6,4,.94);z-index:60;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px;}
+  .matchov.show{display:flex;}
+  .matchov .knot{font-size:56px;margin-bottom:18px;}
+  .matchov h2{font-size:26px;color:var(--gold-light);font-weight:800;letter-spacing:1px;margin-bottom:10px;}
+  .matchov p{color:var(--muted);font-size:13.5px;line-height:1.7;margin-bottom:28px;}
+  .goldbtn{background:linear-gradient(135deg,#c9a45c,#a07c33);color:#171008;font-weight:700;font-size:14px;border:none;border-radius:26px;padding:14px 36px;cursor:pointer;}
+  .ghostbtn{background:none;border:none;color:var(--muted);font-size:13px;margin-top:16px;cursor:pointer;text-decoration:underline;}
+
+  /* ===== likes ===== */
+  .secthead{padding:4px 20px 12px;font-size:13px;color:var(--muted);}
+  .mgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 16px;overflow-y:auto;}
+  .mcell{border-radius:18px;overflow:hidden;position:relative;height:190px;background:var(--surface);cursor:pointer;}
+  .mcell .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:38px;font-weight:800;color:rgba(255,255,255,.22);}
+  .mcell .gr{position:absolute;inset:0;background:linear-gradient(180deg,transparent 50%,rgba(10,8,6,.9));}
+  .mcell .nm{position:absolute;bottom:10px;left:12px;font-size:13px;font-weight:600;}
+  .mcell .st{position:absolute;top:10px;right:10px;font-size:10px;background:rgba(201,164,92,.9);color:#171008;font-weight:700;padding:3px 8px;border-radius:10px;}
+
+  /* ===== chat ===== */
+  .clist{overflow-y:auto;flex:1;}
+  .citem{display:flex;gap:12px;padding:13px 20px;cursor:pointer;border-bottom:1px solid #1d1812;align-items:center;}
+  .citem:hover{background:var(--surface);}
+  .avatar{width:52px;height:52px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:19px;color:rgba(255,255,255,.35);}
+  .citem .cc{flex:1;min-width:0;}
+  .citem .cn{font-size:14.5px;font-weight:600;display:flex;gap:6px;align-items:center;}
+  .citem .cm{font-size:12.5px;color:var(--muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .citem .ct{font-size:10.5px;color:#6b5f4f;flex-shrink:0;}
+  .unread{min-width:18px;height:18px;border-radius:9px;background:var(--gold);color:#171008;font-size:10.5px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 5px;}
+
+  .chathead{display:flex;align-items:center;gap:12px;padding:8px 16px 12px;border-bottom:1px solid #221c15;}
+  .back{font-size:20px;color:var(--gold);cursor:pointer;padding:4px 8px;}
+  .chathead .who{flex:1;}
+  .chathead .who b{font-size:15px;}
+  .chathead .who span{display:block;font-size:11px;color:var(--ok);}
+  .msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;}
+  .msg{max-width:78%;padding:11px 14px;border-radius:16px;font-size:13.5px;line-height:1.55;}
+  .msg.them{background:var(--surface2);border-bottom-left-radius:4px;align-self:flex-start;}
+  .msg.me{background:linear-gradient(135deg,#bd9850,#96742f);color:#171008;border-bottom-right-radius:4px;align-self:flex-end;}
+  .msg .orig{font-size:11.5px;opacity:.62;margin-top:7px;padding-top:7px;border-top:1px dashed rgba(255,255,255,.25);}
+  .msg.me .orig{border-top-color:rgba(0,0,0,.25);}
+  .trnote{align-self:center;font-size:10.5px;color:#6b5f4f;display:flex;align-items:center;gap:5px;}
+  .inputrow{display:flex;gap:8px;padding:10px 14px;border-top:1px solid #221c15;align-items:center;}
+  .inputrow input{flex:1;background:var(--surface2);border:1px solid #2e2620;border-radius:22px;padding:12px 16px;color:var(--text);font-size:13.5px;outline:none;}
+  .send{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#c9a45c,#a07c33);border:none;color:#171008;font-size:16px;cursor:pointer;flex-shrink:0;}
+
+  /* ===== my page ===== */
+  .my{overflow-y:auto;padding:0 20px;flex:1;}
+  .myhead{display:flex;align-items:center;gap:16px;padding:8px 0 18px;}
+  .myhead .avatar{width:72px;height:72px;font-size:26px;background:linear-gradient(135deg,#37507a,#22344f);}
+  .myhead h3{font-size:18px;}
+  .myhead .tier{font-size:11px;color:var(--gold);letter-spacing:2px;margin-top:4px;}
+  .vcard{background:linear-gradient(135deg,#1d1710,#241c12);border:1px solid rgba(201,164,92,.45);border-radius:18px;padding:16px 18px;margin-bottom:14px;}
+  .vcard .vt{display:flex;justify-content:space-between;align-items:center;font-size:13.5px;font-weight:700;color:var(--gold-light);}
+  .vcard .vs{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.6;}
+  .vrow{display:flex;justify-content:space-between;align-items:center;padding:13px 2px;border-bottom:1px solid #1d1812;font-size:13.5px;}
+  .vrow .lab{color:var(--muted);font-size:12.5px;}
+  .vrow.link{cursor:pointer;}
+  .vrow.link:hover .lab{color:var(--gold-light);}
+  .pill{font-size:11px;padding:4px 10px;border-radius:12px;font-weight:700;}
+  .pill.done{background:rgba(95,156,122,.18);color:#8fc6a8;border:1px solid rgba(95,156,122,.4);}
+  .pill.wait{background:rgba(176,86,79,.15);color:#d99790;border:1px solid rgba(176,86,79,.4);}
+
+  /* ===== score bars ===== */
+  .scrow{margin-bottom:14px;}
+  .scrow .st1{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:6px;}
+  .scrow .st1 b{font-weight:600;}
+  .scrow .st1 .sv{color:var(--gold-light);font-weight:800;}
+  .sbar{height:8px;background:#241d15;border-radius:4px;position:relative;overflow:visible;}
+  .sbar .sfill{height:100%;border-radius:4px;background:linear-gradient(90deg,#8fae7c,#5f9c7a);}
+  .sbar .cut{position:absolute;top:-3px;bottom:-3px;width:2px;background:#d99790;border-radius:1px;}
+  .scrow .st2{display:flex;justify-content:space-between;font-size:10px;color:#6b5f4f;margin-top:4px;}
+  .passpill{font-size:10px;background:rgba(95,156,122,.2);color:#8fc6a8;border:1px solid rgba(95,156,122,.45);padding:2px 8px;border-radius:10px;font-weight:800;margin-left:6px;}
+
+  /* ===== membership ===== */
+  .tiers{flex:1;overflow-y:auto;padding:0 18px 10px;}
+  .tier-card{border-radius:20px;padding:18px;margin-bottom:14px;border:1px solid #2e2620;background:var(--surface);position:relative;cursor:pointer;}
+  .tier-card.hot{border:1.5px solid var(--gold);background:linear-gradient(135deg,#1f180f,#241b10);}
+  .tier-card .tn{font-size:15px;font-weight:800;letter-spacing:2px;}
+  .tier-card.hot .tn{color:var(--gold-light);}
+  .tier-card .tp{font-size:20px;font-weight:800;margin:8px 0 2px;}
+  .tier-card .tp small{font-size:12px;color:var(--muted);font-weight:400;}
+  .tier-card ul{list-style:none;margin-top:10px;}
+  .tier-card li{font-size:12px;color:var(--muted);padding:4px 0 4px 18px;position:relative;line-height:1.5;}
+  .tier-card li::before{content:'✦';position:absolute;left:0;color:var(--gold);font-size:10px;top:6px;}
+  .tier-card .tag{position:absolute;top:-9px;right:16px;background:var(--gold);color:#171008;font-size:10px;font-weight:800;padding:3px 10px;border-radius:10px;letter-spacing:1px;}
+  .freenote{background:rgba(95,156,122,.12);border:1px solid rgba(95,156,122,.35);border-radius:14px;padding:14px 16px;font-size:12.5px;color:#a9d4bc;line-height:1.65;margin-bottom:14px;}
+
+  /* ===== events ===== */
+  .evlist{flex:1;overflow-y:auto;padding:0 16px 10px;}
+  .evbanner{margin:0 16px 14px;background:linear-gradient(135deg,#1f180f,#241b10);border:1px solid rgba(201,164,92,.4);border-radius:14px;padding:12px 14px;font-size:11.5px;color:var(--gold-light);line-height:1.65;}
+  .evcard{display:flex;gap:14px;background:var(--surface);border:1px solid #2e2620;border-radius:18px;padding:16px;margin-bottom:12px;position:relative;}
+  .evcard.hot{border-color:var(--gold);}
+  .evcard .tag{position:absolute;top:-9px;right:14px;background:var(--gold);color:#171008;font-size:10px;font-weight:800;padding:3px 10px;border-radius:10px;letter-spacing:1px;}
+  .evdate{width:56px;flex-shrink:0;text-align:center;background:var(--surface2);border-radius:12px;padding:10px 4px;height:fit-content;}
+  .evdate b{display:block;font-size:15px;color:var(--gold-light);}
+  .evdate span{font-size:9.5px;color:var(--muted);}
+  .evc{flex:1;min-width:0;}
+  .evt{font-size:14.5px;font-weight:700;}
+  .evd{font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.5;}
+  .evm{font-size:11px;color:#b3a58f;margin-top:6px;}
+  .evbtn{margin-top:10px;width:100%;padding:9px;border-radius:12px;border:none;background:linear-gradient(135deg,#c9a45c,#a07c33);color:#171008;font-weight:700;font-size:12px;cursor:pointer;}
+  .evbtn.joined{background:var(--surface2);color:#8fc6a8;border:1px solid rgba(95,156,122,.45);}
+
+  /* ===== onboarding ===== */
+  .onb{position:absolute;inset:0;background:var(--bg);z-index:70;display:none;flex-direction:column;padding:60px 26px 30px;}
+  .onb.active{display:flex;}
+  .onb .step{font-size:11px;color:var(--gold);letter-spacing:3px;margin-bottom:10px;}
+  .onb h2{font-size:22px;font-weight:800;line-height:1.4;margin-bottom:8px;}
+  .onb .desc{font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:20px;}
+  .onb .body{flex:1;overflow-y:auto;}
+  .onb .foot{padding-top:14px;}
+  .onb .goldbtn{width:100%;}
+  .splashlogo{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;}
+  .splashlogo .mark{font-size:54px;margin-bottom:16px;}
+  .splashlogo .bn{font-size:32px;font-weight:800;letter-spacing:3px;}
+  .splashlogo .bn em{color:var(--gold);font-style:normal;}
+  .splashlogo .bs{font-size:12px;color:var(--muted);letter-spacing:5px;margin-top:8px;}
+  .splashlogo .tagline{font-size:13.5px;color:var(--muted);margin-top:26px;line-height:1.8;}
+  .docrow{display:flex;align-items:center;gap:12px;border:1px solid #2e2620;border-radius:14px;padding:14px;margin-bottom:10px;background:var(--surface);cursor:pointer;}
+  .docrow .di{width:38px;height:38px;border-radius:10px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+  .docrow .dc{flex:1;}
+  .docrow .dn{font-size:13px;font-weight:600;}
+  .docrow .ds{font-size:11px;color:var(--muted);margin-top:2px;}
+  .docrow .dst{font-size:11px;color:#6b5f4f;font-weight:700;flex-shrink:0;}
+  .docrow.up{border-color:rgba(95,156,122,.5);}
+  .docrow.up .dst{color:#8fc6a8;}
+  .qcard{border:1px solid #2e2620;border-radius:16px;padding:16px;margin-bottom:12px;background:var(--surface);}
+  .qcard .qt{font-size:13px;line-height:1.6;margin-bottom:12px;}
+  .likert{display:flex;justify-content:space-between;align-items:center;}
+  .likert .lk{width:34px;height:34px;border-radius:50%;border:1.5px solid #3a3128;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--muted);cursor:pointer;}
+  .likert .lk.sel{border-color:var(--gold);background:rgba(201,164,92,.18);color:var(--gold-light);font-weight:800;}
+  .lklab{display:flex;justify-content:space-between;font-size:9.5px;color:#6b5f4f;margin-top:6px;}
+  .reviewbox{text-align:center;padding:26px 10px;}
+  .reviewbox .ric{font-size:52px;margin-bottom:18px;}
+  .reviewbox .rt{font-size:17px;font-weight:700;margin-bottom:10px;color:var(--gold-light);}
+  .reviewbox .rd{font-size:12.5px;color:var(--muted);line-height:1.8;}
+  .prog{height:4px;background:#241d15;border-radius:2px;margin-bottom:26px;overflow:hidden;}
+  .prog .bar{height:100%;background:linear-gradient(90deg,#c9a45c,#e6cf9a);border-radius:2px;transition:width .4s;}
+  .drcard{border:1px solid rgba(201,164,92,.4);border-radius:16px;padding:16px;background:linear-gradient(135deg,#1d1710,#241c12);display:flex;gap:14px;align-items:center;margin-bottom:14px;}
+  .drcard .avatar{width:54px;height:54px;font-size:20px;background:linear-gradient(135deg,#4a5d7a,#2b3a52);flex-shrink:0;}
+  .drcard .dn2{font-size:13.5px;font-weight:700;}
+  .drcard .dd2{font-size:11.5px;color:var(--muted);margin-top:3px;line-height:1.5;}
+
+  .disclaimer{position:absolute;bottom:82px;left:0;right:0;text-align:center;font-size:9px;color:#4d4335;z-index:30;pointer-events:none;}
+</style>
+</head>
+<body>
+<div class="stage">
+
+  <div class="pitch">
+    <h1>MUSUBI <span>무스비</span></h1>
+    <div class="jp">結び · 성격으로 검증된 만남</div>
+    <p>직업이 아닌 <b style="color:var(--text)">성격</b>으로 가입 자격을 심사하는 한일 데이팅 앱 프로토타입입니다. 정신건강의학과 전문의가 설계·감수한 심리평가와 화상 인터뷰로 성격을 수치화하고, 기준 미달 시 가입이 거절됩니다.</p>
+    <div class="feat"><div class="dot"></div><div><b>남성 기준</b> — 자상함·강인함·적극성 + 다정함·애정 표현력·리드력·존중(비구속)</div></div>
+    <div class="feat"><div class="dot"></div><div><b>여성 기준</b> — 친화성·애교·비용 공정성 + 경청·리액션·온화한 대처·자립성</div></div>
+    <div class="feat"><div class="dot"></div><div><b>공통</b> — 모임 사교성 점수, 오프라인 이벤트 우선 초대에 연동</div></div>
+    <div class="feat"><div class="dot"></div><div><b>이벤트 탭</b> — 호스트가 이끄는 검증 회원 전용 정기 모임 (참가 신청 동작)</div></div>
+    <div class="modes">
+      <button class="modebtn on" id="mb-kr" onclick="setMode('kr')">🇰🇷 남성 회원 화면</button>
+      <button class="modebtn" id="mb-jp" onclick="setMode('jp')">🇯🇵 女性会員 画面</button>
+    </div>
+    <button class="restart" onclick="startOnboarding()">↻ 가입·성격검증 플로우 다시 보기</button>
+  </div>
+
+  <div class="phone">
+    <div class="notch"></div>
+
+    <!-- ============ ONBOARDING ============ -->
+    <div class="onb active" id="onb">
+      <div id="onb-body" style="display:flex;flex-direction:column;flex:1;min-height:0;"></div>
+    </div>
+
+    <!-- ============ DISCOVER ============ -->
+    <div class="screen" id="scr-discover">
+      <div class="apptitle">
+        <div><div class="logo">MU<em>SUBI</em></div><div class="sub" id="d-sub">PERSONALITY VERIFIED</div></div>
+        <div class="icbtn" title="필터">⚙</div>
+      </div>
+      <div class="cardwrap" id="cardwrap">
+        <div class="empty" id="empty"><div class="big">🎋</div><div id="empty-txt"></div></div>
+      </div>
+      <div class="actions">
+        <div class="act pass" onclick="swipe(false)">✕</div>
+        <div class="act sml" title="슈퍼 관심">★</div>
+        <div class="act like" onclick="swipe(true)">♥</div>
+      </div>
+    </div>
+
+    <!-- ============ LIKES ============ -->
+    <div class="screen" id="scr-likes">
+      <div class="apptitle"><div class="logo" id="l-title"></div><div class="icbtn">↻</div></div>
+      <div class="secthead" id="l-head"></div>
+      <div class="mgrid" id="l-grid"></div>
+    </div>
+
+    <!-- ============ EVENTS ============ -->
+    <div class="screen" id="scr-events">
+      <div class="apptitle"><div class="logo" id="e-title"></div><div class="icbtn">🗓</div></div>
+      <div class="evbanner" id="e-banner"></div>
+      <div class="evlist" id="e-list"></div>
+    </div>
+
+    <!-- ============ CHAT LIST ============ -->
+    <div class="screen" id="scr-chats">
+      <div class="apptitle"><div class="logo" id="c-title"></div><div class="icbtn">✎</div></div>
+      <div class="clist" id="c-list"></div>
+    </div>
+
+    <!-- ============ CHAT ROOM ============ -->
+    <div class="screen" id="scr-room">
+      <div class="chathead">
+        <div class="back" onclick="closeRoom()">‹</div>
+        <div class="avatar" id="r-avatar" style="width:42px;height:42px;font-size:16px;"></div>
+        <div class="who"><b id="r-name"></b><span id="r-status"></span></div>
+        <div class="icbtn" title="영상 통화">📞</div>
+      </div>
+      <div class="msgs" id="msgs"></div>
+      <div class="inputrow">
+        <input id="minput" onkeydown="if(event.key==='Enter')sendMsg()">
+        <button class="send" onclick="sendMsg()">↑</button>
+      </div>
+    </div>
+
+    <!-- ============ MY ============ -->
+    <div class="screen" id="scr-my">
+      <div class="apptitle"><div class="logo" id="m-title"></div><div class="icbtn">⚙</div></div>
+      <div class="my" id="m-body"></div>
+    </div>
+
+    <!-- ============ MEMBERSHIP ============ -->
+    <div class="screen" id="scr-tier">
+      <div class="chathead" style="border-bottom:none;">
+        <div class="back" onclick="showScreen('scr-my')">‹</div>
+        <div class="who"><b id="t-title"></b></div>
+      </div>
+      <div class="tiers" id="t-body"></div>
+    </div>
+
+    <!-- ============ MATCH OVERLAY ============ -->
+    <div class="matchov" id="matchov">
+      <div class="knot">🎀</div>
+      <h2 id="match-h"></h2>
+      <p id="matchname"></p>
+      <button class="goldbtn" onclick="toMsg()" id="match-btn"></button>
+      <button class="ghostbtn" onclick="hideMatch()" id="match-skip"></button>
+    </div>
+
+    <div class="disclaimer">프로토타입 — 모든 인물·데이터는 가상입니다 / プロトタイプ — 人物・データはすべて架空です</div>
+
+    <!-- ============ TAB BAR ============ -->
+    <div class="tabbar" id="tabbar" style="display:none;">
+      <div class="tab on" data-s="scr-discover" onclick="go(this)"><svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.8-10-9.5C.5 8 2.5 4.5 6 4.5c2.2 0 3.8 1.2 6 3.6 2.2-2.4 3.8-3.6 6-3.6 3.5 0 5.5 3.5 4 7-2.5 4.7-10 9.5-10 9.5z"/></svg><span class="tl"></span></div>
+      <div class="tab" data-s="scr-likes" onclick="go(this)"><div class="badge"><svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.3 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8z"/></svg></div><span class="tl"></span></div>
+      <div class="tab" data-s="scr-events" onclick="go(this)"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span class="tl"></span></div>
+      <div class="tab" data-s="scr-chats" onclick="go(this)"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-8 8H4l2-3a8 8 0 1 1 15-5z"/></svg><span class="tl"></span></div>
+      <div class="tab" data-s="scr-my" onclick="go(this)"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg><span class="tl"></span></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================= DATA ================= */
+const UIMG=(id,w)=>`https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&q=75`;
+const DATA={
+kr:{
+  sub:"PERSONALITY VERIFIED",
+  tabs:["추천","관심","이벤트","대화","MY"],
+  empty:"오늘의 추천 프로필을 모두 확인했습니다.<br>내일 오전 9시에 새로운 인연이 도착합니다.",
+  vbadge:"✦ 성격 검증 PASS",
+  matchH:"인연이 맺어졌습니다",
+  matchP:n=>`${n} 님도 회원님에게 관심을 보냈어요.<br>두 분 모두 성격 검증을 통과한 회원입니다.<br>지금 첫 메시지를 보내보세요. 번역은 무스비가 할게요.`,
+  matchBtn:"메시지 보내기",matchSkip:"계속 둘러보기",
+  likesTitle:'받은 <em>관심</em>',likesHead:'나에게 관심을 보낸 회원 <b style="color:var(--gold)">4명</b>',
+  chatTitle:'대화<em>.</em>',myTitle:'마이<em>페이지</em>',tierTitle:'멤버십 안내',
+  placeholder:"한국어로 입력하면 일본어로 전달됩니다",
+  sendNote:"🌐 일본어로 번역되어 전송됩니다…",
+  profiles:[
+    {n:"유키",a:28,l:"도쿄 · 호텔리어",g:"linear-gradient(135deg,#8a6d9b,#3d2f4a)",i:"YUKI",ph:UIMG("1494790108377-be9c29b29330",750),c:[["친화성 88",1],["경청·리액션 91",1],["비용 공정성 85",1],["한국어 중급",0]]},
+    {n:"아이리",a:31,l:"오사카 · 약사",g:"linear-gradient(135deg,#6d8a9b,#2f3d4a)",i:"AIRI",ph:UIMG("1438761681033-6461ffad8d80",750),c:[["자립성 89",1],["애교 81",1],["비용 공정성 93",1],["한국어 고급",0]]},
+    {n:"사쿠라",a:26,l:"후쿠오카 · 유치원 교사",g:"linear-gradient(135deg,#9b7a6d,#4a352f)",i:"SAKURA",ph:UIMG("1544005313-94ddf0286df2",750),c:[["애교 95",1],["온화한 대처 86",1],["사교성 90",1],["요리 자신 있음",0]]},
+    {n:"미나",a:33,l:"나고야 · 간호사",g:"linear-gradient(135deg,#7a9b6d,#354a2f)",i:"MINA",ph:UIMG("1517841905240-472988babdf9",750),c:[["친화성 93",1],["경청·리액션 87",1],["사교성 85",1],["온천 여행",0]]}
+  ],
+  likes:[
+    {i:"RIN",n:"린 · 29 · 오사카",g:"linear-gradient(135deg,#6d5a7a,#41354c)",ph:UIMG("1529626455594-4ff0802cfb7e",400),st:"NEW"},
+    {i:"MAO",n:"마오 · 31 · 도쿄",g:"linear-gradient(135deg,#7a6a5a,#4c4035)",ph:UIMG("1524504388940-b1c1722653e1",400)},
+    {i:"YUI",n:"유이 · 27 · 후쿠오카",g:"linear-gradient(135deg,#5a707a,#35454c)",ph:UIMG("1488426862026-3ee34a7d66df",400),st:"NEW"},
+    {i:"SAKI",n:"사키 · 33 · 요코하마",g:"linear-gradient(135deg,#7a5a5e,#4c3538)",ph:UIMG("1534528741775-53994a69daeb",400)}
+  ],
+  chats:[
+    {av:"ア",g:"linear-gradient(135deg,#8a6d9b,#523f61)",ph:UIMG("1508214751196-bcfd4ca60f91",200),n:"아야카",v:true,m:"週末は京都に行く予定です 🍁",t:"오후 9:41",u:2,open:true},
+    {av:"ミ",g:"linear-gradient(135deg,#6d8a9b,#3f5261)",ph:UIMG("1531123897727-8f129e1688ce",200),n:"미유",m:"사진 감사합니다! 풍경이 멋지네요",t:"오후 2:10"},
+    {av:"ハ",g:"linear-gradient(135deg,#9b8a6d,#61523f)",ph:UIMG("1502823403499-6ccfcf4fb453",200),n:"하루카",m:"はじめまして。よろしくお願いします",t:"어제"}
+  ],
+  room:{av:"ア",g:"linear-gradient(135deg,#8a6d9b,#523f61)",ph:UIMG("1508214751196-bcfd4ca60f91",200),n:"아야카 · 30",s:"● 지금 접속 중 · 도쿄",
+    note:"🌐 자동 번역이 켜져 있습니다 (한국어 ↔ 일본어)",
+    msgs:[
+      {who:"them",t:"안녕하세요! 프로필의 자상함 점수가 인상적이었어요. 인터뷰까지 통과하셨다니 믿음이 가요.",o:"こんにちは！プロフィールの思いやりスコアが印象的でした。"},
+      {who:"me",t:"반갑습니다, 아야카 씨. 저도 검사받으면서 저 자신에 대해 많이 알게 됐어요. 파티시에로 일하신다고요?",o:"はじめまして、あやかさん。パティシエをされているんですね？"},
+      {who:"them",t:"주말에는 교토에 갈 예정이에요 🍁 한국에 가면 꼭 가봐야 할 곳이 있을까요?",o:"週末は京都に行く予定です 🍁 韓国のおすすめの場所はありますか？"}
+    ]},
+  my:`
+    <div class="myhead"><div class="avatar" style="background:url('https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=200&q=75') center/cover"></div>
+      <div><h3>피터 · 41 · 서울</h3><div class="tier">✦ 성격 검증 PASS · NOBLESSE</div></div></div>
+    <div class="vcard"><div class="vt"><span>성격 검증 완료</span><span>✦</span></div>
+      <div class="vs">정신건강의학과 전문의가 설계·감수한 심리평가와 화상 인터뷰를 거쳐 아래 점수가 확정되었습니다. 점수는 프로필에 표시되며 6개월마다 갱신됩니다.</div>
+      <div style="margin-top:14px;">
+        <div class="scrow"><div class="st1"><b>자상함</b><span class="sv">84 <span class="passpill">PASS</span></span></div><div class="sbar"><div class="sfill" style="width:84%"></div><div class="cut" style="left:70%"></div></div><div class="st2"><span>통과 기준 70</span><span>상위 18%</span></div></div>
+        <div class="scrow"><div class="st1"><b>강인함</b><span class="sv">78 <span class="passpill">PASS</span></span></div><div class="sbar"><div class="sfill" style="width:78%"></div><div class="cut" style="left:70%"></div></div><div class="st2"><span>통과 기준 70</span><span>상위 31%</span></div></div>
+        <div class="scrow"><div class="st1"><b>적극성</b><span class="sv">81 <span class="passpill">PASS</span></span></div><div class="sbar"><div class="sfill" style="width:81%"></div><div class="cut" style="left:70%"></div></div><div class="st2"><span>통과 기준 70</span><span>상위 24%</span></div></div>
+        <div class="scrow"><div class="st1"><b>다정함 (연락·기념일)</b><span class="sv">86 <span class="passpill">PASS</span></span></div><div class="sbar"><div class="sfill" style="width:86%"></div><div class="cut" style="left:70%"></div></div><div class="st2"><span>통과 기준 70</span><span>상위 15%</span></div></div>
+        <div class="scrow"><div class="st1"><b>애정 표현력</b><span class="sv">79 <span class="passpill">PASS</span></span></div><div class="sbar"><div class="sfill" style="width:79%"></div><div class="cut" style="left:70%"></div></div><div class="st2"><span>통과 기준 70</span><span>상위 29%</span></div></div>
+        <div class="scrow"><div class="st1"><b>리드력</b><span class="sv">83 <span class="passpill">PASS</span></span></div><div class="sbar"><div class="sfill" style="width:83%"></div><div class="cut" style="left:70%"></div></div><div class="st2"><span>통과 기준 70</span><span>상위 21%</span></div></div>
+        <div class="scrow"><div class="st1"><b>존중·비구속</b><span class="sv">92 <span class="passpill">PASS</span></span></div><div class="sbar"><div class="sfill" style="width:92%"></div><div class="cut" style="left:70%"></div></div><div class="st2"><span>통과 기준 70</span><span>상위 6%</span></div></div>
+        <div class="scrow" style="margin-bottom:2px;"><div class="st1"><b>모임 사교성</b><span class="sv">88 <span class="passpill">PASS</span></span></div><div class="sbar"><div class="sfill" style="width:88%"></div><div class="cut" style="left:70%"></div></div><div class="st2"><span>통과 기준 70</span><span>이벤트 우선 초대 ✦</span></div></div>
+      </div></div>
+    <div class="vrow"><span class="lab">온라인 심리평가 (전문의 설계·감수)</span><span class="pill done">완료</span></div>
+    <div class="vrow"><span class="lab">심층 화상 인터뷰 (전문의 감수)</span><span class="pill done">완료</span></div>
+    <div class="vrow"><span class="lab">신분증·독신 확인</span><span class="pill done">완료</span></div>
+    <div class="vrow link" onclick="openTier()"><span class="lab">멤버십</span><span style="color:var(--gold);font-size:13px">NOBLESSE · 월 39만원 ›</span></div>
+    <div class="vrow"><span class="lab">이번 주 남은 좋아요</span><span style="font-size:13px">12 / 20</span></div>`,
+  tiers:`
+    <div class="tier-card"><div class="tn">CLASSIC</div>
+      <div class="tp">월 19만원 <small>/ 3개월 약정</small></div>
+      <ul><li>일일 추천 프로필 5명</li><li>주간 좋아요 10회</li><li>자동 번역 채팅</li><li>성격 검증 배지 + 점수 표시</li></ul></div>
+    <div class="tier-card hot"><div class="tag">가장 인기</div><div class="tn">NOBLESSE</div>
+      <div class="tp">월 39만원 <small>/ 3개월 약정</small></div>
+      <ul><li>일일 추천 프로필 15명 + 프로필 노출 상향</li><li>주간 좋아요 20회 + 슈퍼 관심 3회</li><li>성격 궁합 리포트 (매칭 상대와의 상세 궁합 분석)</li><li>월 1회 화상 미팅 통역 지원 (30분)</li></ul></div>
+    <div class="tier-card"><div class="tn">BLACK</div>
+      <div class="tp">월 89만원 <small>/ 6개월 약정</small></div>
+      <ul><li>전담 매니저 1:1 큐레이션 매칭</li><li>전문의 감수 심층 성격 리포트 + 관계 코칭 세션</li><li>무제한 좋아요 · 최상위 노출</li><li>오프라인 만남 일정·통역 동행 지원</li></ul></div>
+    <div class="freenote">💡 여성 회원은 전 기능 무료입니다. 단, 남녀 모두 동일하게 성격 검증을 통과해야 가입할 수 있습니다.</div>`,
+  evTitle:'이벤트<em>.</em>',
+  evBanner:'🎪 <b>노는 법은 무스비가 설계합니다.</b><br>호스트가 이끄는 검증 회원 전용 정기 모임 · 내 모임 사교성 88 — 우선 초대 대상 ✦',
+  evHot:"마감 임박",evJoin:["참가 신청","신청 완료 ✓"],
+  events:[
+    {d1:"7/18",d2:"토 19:00",t:"한일 보드게임 나이트 🎲",desc:"통역 호스트 진행 · 팀전 게임 4종 · 자리 로테이션으로 전원과 대화",city:"서울 성수",m:"남 8/10 · 여 9/10",cond:"사교성 75+",price:"남 5만원 · 여 무료",hot:true},
+    {d1:"8/1",d2:"토 18:00",t:"K-푸드 쿠킹 클래스 🍳",desc:"2인 1조 요리 미션 후 시식 파티 · 조 편성은 무스비 궁합 기반",city:"도쿄 시부야",m:"남 6/8 · 여 8/8",cond:"사교성 70+",price:"남 3만원 · 여 무료"},
+    {d1:"8/22",d2:"토 17:00",t:"선셋 요트 파티 ⛵",desc:"한강 요트 2시간 · 1:1 스피드 토크 세션 포함",city:"서울 여의도",m:"남 4/12 · 여 6/12",cond:"사교성 70+",price:"남 12만원 · 여 무료"},
+    {d1:"9월",d2:"예정",t:"한일 가을 운동회 🏃",desc:"팀 대항 미니게임 · 시상식 후 뒤풀이",city:"후쿠오카",m:"모집 예정",cond:"전 회원",price:"미정"}
+  ],
+  onb:{
+    tag:"국경을 넘는 인연.<br>직업도, 재산도 아닌<br><b style='color:var(--gold-light)'>성격</b>으로 검증된 만남",
+    start:"시작하기",login:"이미 회원입니다 — 로그인",
+    docs:[{ic:"🪪",n:"신분증",s:"본인 확인용"},{ic:"💍",n:"혼인관계증명서",s:"독신 여부 확인 (3개월 이내 발급)"}],
+    docTitle:"신분을 확인합니다",docDesc:"서류는 확인 후 즉시 파기됩니다. (탭하여 업로드)",docBtn:"다음",
+    upTxt:["업로드","업로드 완료 ✓"],
+    qTitle:"심리평가를 시작합니다",qDesc:"전문의가 설계·감수한 평가로, 실제로는 120문항 + 화상 인터뷰로 구성됩니다. 아래는 샘플 3문항입니다.",
+    qs:["연인이 힘든 하루를 보냈다고 하면, 해결책보다 감정을 먼저 물어본다. (자상함)","위기 상황에서 흔들리지 않고 상대가 기댈 수 있는 사람이라는 말을 듣는다. (강인함)","마음에 드는 사람에게 먼저 연락하고 데이트를 제안하는 편이다. (적극성)","기념일을 기억하고 먼저 챙기며, 연락을 꾸준히 하는 편이다. (다정함)","연인의 사생활과 인간관계를 통제하려 하지 않는다. (존중·비구속)"],
+    lk:["전혀 아니다","매우 그렇다"],qBtn:"검사 제출",
+    ivTitle:"심층 화상 인터뷰",
+    ivCard:{n:"전문의 설계·감수 심리평가팀",d:"정신건강의학과 전문의가 설계·감수한 프로토콜에 따라 20분간 화상 인터뷰를 진행합니다. 답변의 일관성과 실제 대화 태도를 함께 평가합니다."},
+    ivDesc:"통과율은 약 58%입니다. 무스비의 신뢰는 이 관문에서 시작됩니다.",ivBtn:"(프로토타입) 인터뷰 완료 처리",
+    rTitle:"검증 결과",rPass:"축하합니다 — 통과했습니다",
+    traits:[{n:"자상함",v:84,cut:70},{n:"강인함",v:78,cut:70},{n:"적극성",v:81,cut:70},{n:"다정함",v:86,cut:70},{n:"애정 표현력",v:79,cut:70},{n:"리드력",v:83,cut:70},{n:"존중·비구속",v:92,cut:70},{n:"모임 사교성",v:88,cut:70}],
+    cutLab:"통과 기준 70",finBtn:"무스비 시작하기",
+    stepLab:["STEP 1 / 4","STEP 2 / 4","STEP 3 / 4","STEP 4 / 4"]
+  }
+},
+jp:{
+  sub:"性格認証マッチ",
+  tabs:["おすすめ","いいね","イベント","トーク","マイ"],
+  empty:"本日のおすすめはすべて確認しました。<br>明日の朝9時に新しいご縁が届きます。",
+  vbadge:"✦ 性格認証 PASS",
+  matchH:"ご縁が結ばれました",
+  matchP:n=>`${n}さんもあなたに関心を寄せています。<br>お二人とも性格審査を通過した会員です。<br>翻訳はMUSUBIにおまかせ。`,
+  matchBtn:"メッセージを送る",matchSkip:"他の方も見る",
+  likesTitle:'もらった<em>いいね</em>',likesHead:'あなたに関心を寄せた会員 <b style="color:var(--gold)">6名</b>',
+  chatTitle:'トーク<em>.</em>',myTitle:'マイ<em>ページ</em>',tierTitle:'メンバーシップ',
+  placeholder:"日本語で入力すると韓国語で届きます",
+  sendNote:"🌐 韓国語に翻訳して送信されます…",
+  profiles:[
+    {n:"ジュノ",a:36,l:"ソウル · 会社経営",g:"linear-gradient(135deg,#37507a,#1d2c45)",i:"JUNHO",ph:UIMG("1507003211169-0a1dd7228f2d",750),c:[["思いやり 88",1],["優しさ86",1],["リード力 83",1],["日本語 中級",0]]},
+    {n:"ミンス",a:34,l:"ソウル · エンジニア",g:"linear-gradient(135deg,#5a6d7a,#2f3a45)",i:"MINSU",ph:UIMG("1500648767791-00dcc994a43e",750),c:[["愛情表現 90",1],["思いやり 91",1],["束縛しない 94",1]]},
+    {n:"テヤン",a:38,l:"釜山 · 自営業",g:"linear-gradient(135deg,#6d7a5a,#3a452f)",i:"TAEYANG",ph:UIMG("1506794778202-cad84cf45f1d",750),c:[["頼もしさ 90",1],["優しさ82",1],["ソーシャル 89",1],["料理が趣味",0]]},
+    {n:"ヒョヌ",a:35,l:"ソウル · 会社員",g:"linear-gradient(135deg,#7a5a6d,#452f3a)",i:"HYUNWOO",ph:UIMG("1519085360753-af0119f7cbe7",750),c:[["積極性 92",1],["リード力 88",1],["愛情表現 85",1],["日本駐在経験",0]]}
+  ],
+  likes:[
+    {i:"SM",n:"ソンミン · 37 · ソウル",g:"linear-gradient(135deg,#5a707a,#35454c)",ph:UIMG("1492562080023-ab3db95bfbce",400),st:"NEW"},
+    {i:"JH",n:"ジェヒョン · 33 · 大邱",g:"linear-gradient(135deg,#6d5a7a,#41354c)",ph:UIMG("1472099645785-5658abf4ff4e",400),st:"NEW"},
+    {i:"DW",n:"ドンウク · 40 · ソウル",g:"linear-gradient(135deg,#7a6a5a,#4c4035)",ph:UIMG("1552374196-c4e7ffc6e126",400)},
+    {i:"JS",n:"ジュンソ · 35 · 仁川",g:"linear-gradient(135deg,#7a5a5e,#4c3538)",ph:UIMG("1463453091185-61582044d556",400)}
+  ],
+  chats:[
+    {av:"ジ",g:"linear-gradient(135deg,#37507a,#22344f)",ph:UIMG("1507003211169-0a1dd7228f2d",200),n:"ジュノ",v:true,m:"来月、東京へ出張で行く予定です",t:"21:15",u:1,open:true},
+    {av:"ミ",g:"linear-gradient(135deg,#5a6d7a,#2f3a45)",ph:UIMG("1500648767791-00dcc994a43e",200),n:"ミンス",m:"週末はよく漢江を散歩しています",t:"昨日"}
+  ],
+  room:{av:"ジ",g:"linear-gradient(135deg,#37507a,#22344f)",ph:UIMG("1507003211169-0a1dd7228f2d",200),n:"ジュノ · 36",s:"● オンライン · ソウル",
+    note:"🌐 自動翻訳がオンです（日本語 ↔ 韓国語）",
+    msgs:[
+      {who:"them",t:"はじめまして。プロフィールを拝見しました。パティシエをされているんですね。",o:"안녕하세요. 프로필 잘 봤습니다."},
+      {who:"me",t:"はじめまして！思いやりスコア88、すごいですね。審査は緊張しましたか？",o:"반갑습니다! 자상함 점수 88, 대단하네요."},
+      {who:"them",t:"面接は少し緊張しました（笑）来月、東京へ出張で行く予定です。よろしければお茶でもいかがですか？",o:"인터뷰는 조금 긴장했어요(웃음) 다음 달에 도쿄 출장 예정입니다."}
+    ]},
+  my:`
+    <div class="myhead"><div class="avatar" style="background:url('https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=200&q=75') center/cover"></div>
+      <div><h3>あやか · 30 · 東京</h3><div class="tier">✦ 性格認証 PASS · 女性会員 無料</div></div></div>
+    <div class="vcard"><div class="vt"><span>性格認証 完了</span><span>✦</span></div>
+      <div class="vs">専門医が設計・監修した心理評価とビデオ面接を経て、以下のスコアが確定しました。スコアはプロフィールに表示され、6ヶ月ごとに更新されます。</div>
+      <div style="margin-top:14px;">
+        <div class="scrow"><div class="st1"><b>親和性</b><span class="sv">82 <span class="passpill">PASS</span></span></div><div class="sbar"><div class="sfill" style="width:82%"></div><div class="cut" style="left:70%"></div></div><div class="st2"><span>基準 70</span><span>上位 27%</span></div></div>
+        <div class="scrow"><div class="st1"><b>愛嬌</b><span class="sv">91 <span class="passpill">PASS</span></span></div><div class="sbar"><div class="sfill" style="width:91%"></div><div class="cut" style="left:70%"></div></div><div class="st2"><span>基準 70</span><span>上位 9%</span></div></div>
+        <div class="scrow"><div class="st1"><b>デート費用の公平性</b><span class="sv">88 <span class="passpill">PASS</span></span></div><div class="sbar"><div class="sfill" style="width:88%"></div><div class="cut" style="left:70%"></div></div><div class="st2"><span>基準 70</span><span>上位 14%</span></div></div>
+        <div class="scrow"><div class="st1"><b>傾聴・リアクション</b><span class="sv">90 <span class="passpill">PASS</span></span></div><div class="sbar"><div class="sfill" style="width:90%"></div><div class="cut" style="left:70%"></div></div><div class="st2"><span>基準 70</span><span>上位 10%</span></div></div>
+        <div class="scrow"><div class="st1"><b>穏やかな対処</b><span class="sv">85 <span class="passpill">PASS</span></span></div><div class="sbar"><div class="sfill" style="width:85%"></div><div class="cut" style="left:70%"></div></div><div class="st2"><span>基準 70</span><span>上位 19%</span></div></div>
+        <div class="scrow"><div class="st1"><b>自立性</b><span class="sv">83 <span class="passpill">PASS</span></span></div><div class="sbar"><div class="sfill" style="width:83%"></div><div class="cut" style="left:70%"></div></div><div class="st2"><span>基準 70</span><span>上位 23%</span></div></div>
+        <div class="scrow" style="margin-bottom:2px;"><div class="st1"><b>ソーシャル指数</b><span class="sv">87 <span class="passpill">PASS</span></span></div><div class="sbar"><div class="sfill" style="width:87%"></div><div class="cut" style="left:70%"></div></div><div class="st2"><span>基準 70</span><span>イベント優先招待 ✦</span></div></div>
+      </div></div>
+    <div class="vrow"><span class="lab">オンライン心理評価（専門医設計・監修）</span><span class="pill done">完了</span></div>
+    <div class="vrow"><span class="lab">ビデオ面接（専門医監修）</span><span class="pill done">完了</span></div>
+    <div class="vrow"><span class="lab">身分証・独身証明</span><span class="pill done">完了</span></div>
+    <div class="vrow link" onclick="openTier()"><span class="lab">メンバーシップ</span><span style="color:var(--gold);font-size:13px">無料 ›</span></div>
+    <div class="vrow"><span class="lab">今週の残りいいね</span><span style="font-size:13px">無制限</span></div>`,
+  tiers:`
+    <div class="freenote">🌸 女性会員はすべての機能を無料でご利用いただけます。ただし、男女ともに同じ性格審査を通過する必要があります。</div>
+    <div class="tier-card hot"><div class="tn">安心・安全への取り組み</div>
+      <ul><li>専門医が設計・監修した性格評価を男女全会員が通過（通過率 約58%）</li><li>男性会員は「思いやり・頼もしさ・積極性」各70点以上のみ</li><li>全会員の独身証明書を確認</li><li>24時間の通報・ブロック対応</li></ul></div>`,
+  evTitle:'イベント<em>.</em>',
+  evBanner:'🎪 <b>遊び方はMUSUBIがデザインします。</b><br>ホストが進行する認証会員限定の定期イベント · あなたのソーシャル指数 87 — 優先招待 ✦',
+  evHot:"締切間近",evJoin:["参加申込","申込完了 ✓"],
+  events:[
+    {d1:"7/18",d2:"土 19:00",t:"日韓ボードゲームナイト 🎲",desc:"通訳ホスト進行 · チーム戦ゲーム4種 · 席替えで全員と交流",city:"ソウル 聖水",m:"男 8/10 · 女 9/10",cond:"ソーシャル 75+",price:"女性 無料（渡航別）",hot:true},
+    {d1:"8/1",d2:"土 18:00",t:"K-フード料理教室 🍳",desc:"2人1組の料理ミッション後、試食パーティー · 組分けはMUSUBI相性ベース",city:"東京 渋谷",m:"男 6/8 · 女 8/8",cond:"ソーシャル 70+",price:"女性 無料"},
+    {d1:"8/22",d2:"土 17:00",t:"サンセットヨットパーティー ⛵",desc:"漢江ヨット2時間 · 1:1スピードトークセッション付き",city:"ソウル 汝矣島",m:"男 4/12 · 女 6/12",cond:"ソーシャル 70+",price:"女性 無料（渡航別）"},
+    {d1:"9月",d2:"予定",t:"日韓秋の運動会 🏃",desc:"チーム対抗ミニゲーム · 表彰式後の打ち上げ",city:"福岡",m:"募集予定",cond:"全会員",price:"未定"}
+  ],
+  onb:{
+    tag:"国境を越えるご縁。<br>職業でも年収でもなく<br><b style='color:var(--gold-light)'>性格</b>で審査される出会い",
+    start:"はじめる",login:"会員の方 — ログイン",
+    docs:[{ic:"🪪",n:"身分証",s:"本人確認用"},{ic:"💍",n:"独身証明書",s:"3ヶ月以内発行"}],
+    docTitle:"本人確認を行います",docDesc:"書類は確認後、直ちに破棄されます。（タップしてアップロード）",docBtn:"次へ",
+    upTxt:["アップロード","完了 ✓"],
+    qTitle:"心理評価をはじめます",qDesc:"専門医が設計・監修した評価で、実際は120問＋ビデオ面接で構成されます。以下はサンプル3問です。",
+    qs:["相手の意見を尊重し、柔軟に合わせることに抵抗がない。（親和性）","初対面でも明るく親しみやすい雰囲気を作るのが得意だ。（愛嬌）","デート費用は一方に負担が偏らないよう、公平に分担したい。（費用の公平性）","相手の話には相づちを打ちながら楽しく聞ける。（傾聴・リアクション）","意見がぶつかっても、感情的にならず穏やかに話し合える。（穏やかな対処）"],
+    lk:["全く違う","とてもそう"],qBtn:"検査を提出",
+    ivTitle:"ビデオ面接",
+    ivCard:{n:"専門医設計・監修 心理評価チーム",d:"精神科専門医が設計・監修したプロトコルに基づき、20分間のビデオ面接を行います。回答の一貫性と実際の会話の様子を合わせて評価します。"},
+    ivDesc:"通過率は約58%。MUSUBIの信頼はこの関門から始まります。",ivBtn:"（プロトタイプ）面接完了にする",
+    rTitle:"審査結果",rPass:"おめでとうございます — 合格です",
+    traits:[{n:"親和性",v:82,cut:70},{n:"愛嬌",v:91,cut:70},{n:"デート費用の公平性",v:88,cut:70},{n:"傾聴・リアクション",v:90,cut:70},{n:"穏やかな対処",v:85,cut:70},{n:"自立性",v:83,cut:70},{n:"ソーシャル指数",v:87,cut:70}],
+    cutLab:"基準 70",finBtn:"MUSUBIをはじめる",
+    stepLab:["STEP 1 / 4","STEP 2 / 4","STEP 3 / 4","STEP 4 / 4"]
+  }
+}
+};
+
+/* ============ ONBOARDING ============ */
+let onbStep=0, upDocs=new Set(), answers={};
+
+function renderOnb(){
+  const O=DATA[MODE].onb;
+  const b=document.getElementById('onb-body');
+  const pct=[0,22,50,75,100][onbStep];
+  const prog=onbStep>0?`<div class="prog"><div class="bar" style="width:${pct}%"></div></div>`:'';
+  if(onbStep===0){
+    b.innerHTML=`<div class="splashlogo">
+      <div class="mark">🎀</div>
+      <div class="bn">MU<em>SUBI</em></div><div class="bs">結び · 무스비</div>
+      <div class="tagline">${O.tag}</div></div>
+      <div class="foot"><button class="goldbtn" onclick="nextOnb()">${O.start}</button>
+      <button class="ghostbtn" style="width:100%" onclick="finishOnb()">${O.login}</button></div>`;
+  }else if(onbStep===1){
+    b.innerHTML=`${prog}<div class="step">${O.stepLab[0]}</div>
+      <h2>${O.docTitle}</h2><div class="desc">${O.docDesc}</div>
+      <div class="body">${O.docs.map((d,k)=>`
+        <div class="docrow ${upDocs.has(k)?'up':''}" onclick="upDoc(${k})">
+          <div class="di">${d.ic}</div>
+          <div class="dc"><div class="dn">${d.n}</div><div class="ds">${d.s}</div></div>
+          <div class="dst">${upDocs.has(k)?O.upTxt[1]:O.upTxt[0]}</div></div>`).join('')}</div>
+      <div class="foot"><button class="goldbtn" onclick="nextOnb()" ${upDocs.size<O.docs.length?'disabled style="opacity:.4"':''}>${O.docBtn}</button></div>`;
+  }else if(onbStep===2){
+    b.innerHTML=`${prog}<div class="step">${O.stepLab[1]}</div>
+      <h2>${O.qTitle}</h2><div class="desc">${O.qDesc}</div>
+      <div class="body">${O.qs.map((q,k)=>`
+        <div class="qcard"><div class="qt">${q}</div>
+          <div class="likert">${[1,2,3,4,5].map(v=>`<div class="lk ${answers[k]===v?'sel':''}" onclick="pickAns(${k},${v})">${v}</div>`).join('')}</div>
+          <div class="lklab"><span>${O.lk[0]}</span><span>${O.lk[1]}</span></div></div>`).join('')}</div>
+      <div class="foot"><button class="goldbtn" onclick="nextOnb()" ${Object.keys(answers).length<O.qs.length?'disabled style="opacity:.4"':''}>${O.qBtn}</button></div>`;
+  }else if(onbStep===3){
+    b.innerHTML=`${prog}<div class="step">${O.stepLab[2]}</div>
+      <h2>${O.ivTitle}</h2>
+      <div class="body">
+        <div class="drcard"><div class="avatar">🩺</div>
+          <div><div class="dn2">${O.ivCard.n}</div><div class="dd2">${O.ivCard.d}</div></div></div>
+        <div class="reviewbox"><div class="ric">🎥</div><div class="rd">${O.ivDesc}</div></div></div>
+      <div class="foot"><button class="goldbtn" onclick="nextOnb()">${O.ivBtn}</button></div>`;
+  }else{
+    b.innerHTML=`${prog}<div class="step">${O.stepLab[3]}</div>
+      <h2>${O.rTitle}</h2>
+      <div class="desc" style="color:var(--gold-light);font-weight:700;">✦ ${O.rPass}</div>
+      <div class="body">${O.traits.map(t=>`
+        <div class="scrow"><div class="st1"><b>${t.n}</b><span class="sv">${t.v} <span class="passpill">PASS</span></span></div>
+        <div class="sbar"><div class="sfill" style="width:${t.v}%"></div><div class="cut" style="left:${t.cut}%"></div></div>
+        <div class="st2"><span>${O.cutLab}</span></div></div>`).join('')}</div>
+      <div class="foot"><button class="goldbtn" onclick="finishOnb()">${O.finBtn}</button></div>`;
+  }
+}
+function upDoc(k){upDocs.add(k);renderOnb();}
+function pickAns(k,v){answers[k]=v;renderOnb();}
+function nextOnb(){
+  const O=DATA[MODE].onb;
+  if(onbStep===1&&upDocs.size<O.docs.length)return;
+  if(onbStep===2&&Object.keys(answers).length<O.qs.length)return;
+  onbStep++;renderOnb();
+}
+function startOnboarding(){onbStep=0;upDocs=new Set();answers={};
+  document.getElementById('onb').classList.add('active');
+  document.getElementById('tabbar').style.display='none';
+  document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
+  renderOnb();}
+function finishOnb(){document.getElementById('onb').classList.remove('active');document.getElementById('tabbar').style.display='flex';showScreen('scr-discover');setTab('scr-discover');}
+
+/* ============ APP RENDER ============ */
+let MODE='kr', idx=0;
+const $=id=>document.getElementById(id);
+
+function setMode(m){
+  MODE=m;idx=0;
+  $('mb-kr').classList.toggle('on',m==='kr');
+  $('mb-jp').classList.toggle('on',m==='jp');
+  renderStatic();renderCards();
+  if($('onb').classList.contains('active')){startOnboarding();}
+  else{showScreen('scr-discover');setTab('scr-discover');}
+}
+function renderStatic(){
+  const D=DATA[MODE];
+  $('d-sub').textContent=D.sub;
+  document.querySelectorAll('.tab .tl').forEach((e,k)=>e.textContent=D.tabs[k]);
+  $('empty-txt').innerHTML=D.empty;
+  $('l-title').innerHTML=D.likesTitle;$('l-head').innerHTML=D.likesHead;
+  $('l-grid').innerHTML=D.likes.map(x=>`<div class="mcell" style="background:${x.ph?`url('${x.ph}') center top/cover`:x.g}">${x.ph?'':`<div class="ph">${x.i}</div>`}<div class="gr"></div>${x.st?`<div class="st">${x.st}</div>`:''}<div class="nm">${x.n}</div></div>`).join('');
+  $('c-title').innerHTML=D.chatTitle;
+  $('c-list').innerHTML=D.chats.map(c=>`
+    <div class="citem" ${c.open?'onclick="openRoom()"':''}>
+      <div class="avatar" style="background:${c.ph?`url('${c.ph}') center/cover`:c.g}">${c.ph?'':c.av}</div>
+      <div class="cc"><div class="cn">${c.n} ${c.v?'<span style="font-size:10px;color:var(--gold)">✦</span>':''}</div><div class="cm">${c.m}</div></div>
+      <div style="text-align:right"><div class="ct">${c.t}</div>${c.u?`<div class="unread" style="margin-top:5px;margin-left:auto">${c.u}</div>`:''}</div></div>`).join('');
+  const R=D.room;
+  if(R.ph){$('r-avatar').style.background=`url('${R.ph}') center/cover`;$('r-avatar').textContent='';}
+  else{$('r-avatar').style.background=R.g;$('r-avatar').textContent=R.av;}
+  $('r-name').textContent=R.n;$('r-status').textContent=R.s;
+  $('msgs').innerHTML=`<div class="trnote">${R.note}</div>`+R.msgs.map(m=>`<div class="msg ${m.who}">${m.t}<div class="orig">${m.o}</div></div>`).join('');
+  $('minput').placeholder=D.placeholder;
+  $('m-title').innerHTML=D.myTitle;$('m-body').innerHTML=D.my;
+  $('t-title').textContent=D.tierTitle;$('t-body').innerHTML=D.tiers;
+  $('e-title').innerHTML=D.evTitle;$('e-banner').innerHTML=D.evBanner;
+  $('e-list').innerHTML=D.events.map(e=>`
+    <div class="evcard ${e.hot?'hot':''}">
+      ${e.hot?`<div class="tag">${D.evHot}</div>`:''}
+      <div class="evdate"><b>${e.d1}</b><span>${e.d2}</span></div>
+      <div class="evc">
+        <div class="evt">${e.t}</div>
+        <div class="evd">${e.desc}</div>
+        <div class="evm">📍 ${e.city} · 👥 ${e.m}</div>
+        <div class="evm">✦ ${e.cond} · 💳 ${e.price}</div>
+        <button class="evbtn" onclick="joinEv(this)">${D.evJoin[0]}</button>
+      </div>
+    </div>`).join('');
+  $('match-h').textContent=D.matchH;$('match-btn').textContent=D.matchBtn;$('match-skip').textContent=D.matchSkip;
+}
+function renderCards(){
+  const D=DATA[MODE],wrap=$('cardwrap');
+  wrap.querySelectorAll('.pcard').forEach(e=>e.remove());
+  for(let k=Math.min(idx+1,D.profiles.length-1);k>=idx;k--){
+    if(k>=D.profiles.length)continue;
+    const p=D.profiles[k],d=document.createElement('div');
+    d.className='pcard';d.id='card'+k;d.style.background=p.g;
+    if(k>idx){d.style.transform='scale(.95) translateY(10px)';d.style.filter='brightness(.6)';}
+    d.innerHTML=`<div class="photo"${p.ph?` style="background:url('${p.ph}') center 20%/cover"`:''}>${p.ph?'':`<div class="initial">${p.i}</div>`}<div class="grad"></div>
+      <div class="vbadge">${D.vbadge}</div>
+      <div class="pinfo"><h2>${p.n} <span class="age">${p.a}</span></h2>
+      <div class="loc">📍 ${p.l}</div>
+      <div class="chips">${p.c.map(x=>`<span class="chip ${x[1]?'score':''}">${x[0]}</span>`).join('')}</div></div></div>`;
+    wrap.appendChild(d);
+  }
+  $('empty').style.display = idx>=DATA[MODE].profiles.length?'flex':'none';
+}
+function swipe(like){
+  const D=DATA[MODE];
+  if(idx>=D.profiles.length)return;
+  const card=$('card'+idx),name=D.profiles[idx].n;
+  card.classList.add(like?'gone-r':'gone-l');
+  idx++;
+  setTimeout(()=>{renderCards();
+    if(like&&Math.random()<0.6){
+      $('matchname').innerHTML=D.matchP(name);
+      $('matchov').classList.add('show');
+    }},320);
+}
+function hideMatch(){$('matchov').classList.remove('show');}
+function toMsg(){hideMatch();showScreen('scr-chats');setTab('scr-chats');}
+function go(el){setTab(el.dataset.s);showScreen(el.dataset.s);}
+function setTab(s){document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.s===s));}
+function showScreen(s){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));$(s).classList.add('active');}
+function openRoom(){showScreen('scr-room');}
+function closeRoom(){showScreen('scr-chats');}
+function openTier(){showScreen('scr-tier');}
+function joinEv(b){b.textContent=DATA[MODE].evJoin[1];b.classList.add('joined');}
+function sendMsg(){
+  const inp=$('minput');
+  if(!inp.value.trim())return;
+  const m=document.createElement('div');
+  m.className='msg me';
+  m.innerHTML=inp.value+`<div class="orig">${DATA[MODE].sendNote}</div>`;
+  $('msgs').appendChild(m);
+  inp.value='';
+  $('msgs').scrollTop=99999;
+}
+
+renderStatic();renderCards();renderOnb();
+</script>
+</body>
+</html>
