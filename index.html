@@ -44,6 +44,11 @@
   .field input,.field textarea{width:100%;background:var(--surface2);border:1.5px solid #3a3128;border-radius:12px;padding:13px 14px;color:var(--text);font-size:14.5px;outline:none;}
   .field input:focus,.field textarea:focus{border-color:var(--gold);}
   .err{font-size:12.5px;color:var(--danger);margin:6px 0 0;line-height:1.5;min-height:18px;}
+  .socialbtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;border-radius:14px;padding:14px;font-size:14px;font-weight:700;border:none;cursor:pointer;margin-bottom:10px;}
+  .sb-google{background:#fff;color:#1a1a1a;}
+  .sb-kakao{background:#FEE500;color:#191919;}
+  .ordiv{display:flex;align-items:center;gap:12px;color:#6b5f4f;font-size:11px;margin:18px 0 14px;}
+  .ordiv::before,.ordiv::after{content:'';flex:1;height:1px;background:#2e2620;}
   .photopick{width:130px;height:130px;border-radius:50%;background:var(--surface2);border:2px dashed #3a3128;margin:6px auto 14px;
     display:flex;align-items:center;justify-content:center;font-size:34px;cursor:pointer;background-size:cover;background-position:center;color:#6b5f4f;}
   .photopick.has{border-style:solid;border-color:var(--gold);color:transparent;}
@@ -474,6 +479,9 @@ function authScreen(mode){
   $('ob').innerHTML=`<div class="step">MUSUBI</div>
   <h2>${mode==='signup'?t.signup:t.login} <span style="font-size:13px;color:var(--muted)">/ ${mode==='signup'?L.jp.signup:L.jp.login}</span></h2>
   <div class="obody" style="padding-top:10px;">
+    <button class="socialbtn sb-google" onclick="oauth('google')"><svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.5l6.7-6.7C35.7 2.4 30.2 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.8 6.1C12.3 13.4 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17.5z"/><path fill="#FBBC05" d="M10.4 28.7a14.5 14.5 0 0 1 0-9.4l-7.8-6.1a24 24 0 0 0 0 21.6l7.8-6.1z"/><path fill="#34A853" d="M24 48c6.2 0 11.4-2 15.2-5.5l-7.5-5.8c-2 1.4-4.7 2.3-7.7 2.3-6.3 0-11.7-3.9-13.6-9.3l-7.8 6.1C6.5 42.6 14.6 48 24 48z"/></svg>Google로 계속하기 / Googleで続ける</button>
+    <button class="socialbtn sb-kakao" onclick="oauth('kakao')">💬 카카오로 계속하기</button>
+    <div class="ordiv">또는 이메일로 / またはメールで</div>
     <div class="field"><label>${t.email} / ${L.jp.email}</label><input id="a-email" type="email" autocomplete="email"></div>
     <div class="field"><label>${t.pw} / ${L.jp.pw}</label><input id="a-pw" type="password" autocomplete="${mode==='signup'?'new-password':'current-password'}"></div>
     <div class="err" id="a-err"></div>
@@ -483,6 +491,15 @@ function authScreen(mode){
     <button class="ghostbtn" onclick="authScreen('${mode==='signup'?'login':'signup'}')">${mode==='signup'?t.toLogin:t.toSignup}</button>
     <button class="backlink" onclick="splash(false)">‹</button>
   </div>`;
+}
+async function oauth(provider){
+  try{
+    const {error}=await sb.auth.signInWithOAuth({provider,options:{redirectTo:location.origin+location.pathname}});
+    if(error)throw error;
+  }catch(e){
+    const err=$('a-err');
+    if(err)err.textContent=(provider==='google'?'Google':'카카오')+' 로그인이 아직 설정되지 않았습니다. (Supabase 대시보드에서 Provider 활성화 필요)';
+  }
 }
 async function doAuth(mode){
   const email=$('a-email').value.trim(), pw=$('a-pw').value;
