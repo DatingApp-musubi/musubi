@@ -445,12 +445,16 @@ const T=()=>L[LANG];
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 /* ---------------- 부팅 ---------------- */
+let ROUTED=false;
 async function boot(){
   if(!LIVE){splash(true);return;}
+  sb.auth.onAuthStateChange((event,session)=>{
+    if(session&&!ROUTED){ROUTED=true;ME=session.user;routeUser();}
+    if(event==='SIGNED_OUT'){ROUTED=false;ME=null;}
+  });
   const {data:{session}}=await sb.auth.getSession();
-  if(!session){splash(false);return;}
-  ME=session.user;
-  await routeUser();
+  if(session){if(!ROUTED){ROUTED=true;ME=session.user;await routeUser();}}
+  else if(!ROUTED){splash(false);}
 }
 async function routeUser(){
   const {data:p}=await sb.from('profiles').select('*').eq('id',ME.id).maybeSingle();
