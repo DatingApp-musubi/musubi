@@ -54,6 +54,13 @@
   .photopick.has{border-style:solid;border-color:var(--gold);color:transparent;}
   .prog{height:5px;background:#241d15;border-radius:3px;margin-bottom:8px;overflow:hidden;flex-shrink:0;}
   .prog .bar{height:100%;background:linear-gradient(90deg,#c9a45c,#e6cf9a);border-radius:3px;transition:width .25s;}
+  .loveprog{margin-bottom:18px;flex-shrink:0;padding-top:10px;}
+  .lp-track{position:relative;height:10px;background:#241d15;border-radius:6px;}
+  .lp-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,#c9a45c,#e88ca0);transition:width .25s;}
+  .lp-walker{position:absolute;top:-14px;transform:translateX(-55%);font-size:20px;transition:left .25s;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));}
+  .lp-goal{position:absolute;right:-4px;top:-14px;font-size:20px;}
+  .lp-meta{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:10px;}
+  .lp-meta b{color:var(--gold-light);font-weight:600;}
   .pnum{font-size:11px;color:var(--muted);text-align:right;margin-bottom:16px;}
   .qtext{font-size:17.5px;line-height:1.7;min-height:92px;margin-bottom:20px;font-weight:600;}
   .lik{display:flex;flex-direction:column;gap:9px;}
@@ -358,6 +365,7 @@ kr:{
  mpiTitle:"무스비 성격검사 (MPI)",
  mpiDesc:"정신건강의학과 전문의가 설계·감수한 심리평가입니다. 각 문장이 자신과 얼마나 일치하는지 솔직하게 응답해 주세요. 정답은 없으며, 잘 보이려는 응답은 타당도 지표가 감지합니다. 소요 약 12~15분.",
  mpiStart:"검사 시작",back:"← 이전",
+ lpMsg:["💌 인연을 향해 출발!","🌸 좋은 흐름이에요","✨ 벌써 절반을 넘었어요","💘 거의 다 왔어요!"],
  resTitle:"검증 결과",
  vPass:["검사 완료 — 나의 연애 유형","응답이 기록되었습니다. 아래 유형 카드는 프로필에 배지로 표시되어 상대 회원에게 보여집니다."],
  vHold:["조건부 — 화상 인터뷰에서 확인","기준 미달 척도는 인터뷰에서 행동 사례로 확인 후 판정합니다."],
@@ -422,6 +430,7 @@ jp:{
  mpiTitle:"MUSUBI 性格検査 (MPI)",
  mpiDesc:"精神科専門医が設計・監修した心理評価です。正直にお答えください。良く見せようとする回答は妥当性指標が検知します。所要約12〜15分。",
  mpiStart:"検査をはじめる",back:"← 戻る",
+ lpMsg:["💌 ご縁に向かって出発！","🌸 いい調子です","✨ もう半分を超えました","💘 あとちょっと！"],
  resTitle:"審査結果",
  vPass:["検査完了 — あなたの恋愛タイプ","回答が記録されました。下のタイプカードはプロフィールにバッジとして表示されます。"],
  vHold:["条件付き — ビデオ面接で確認","基準未達の尺度は面接で確認のうえ判定します。"],
@@ -646,9 +655,13 @@ function buildSeq(v){
 }
 function startTest(){SEQ=buildSeq(VER);ANS=new Array(SEQ.length).fill(0);pos=0;renderQ();}
 function renderQ(){
-  const t=T(),q=SEQ[pos],pct=45+Math.round(pos/SEQ.length*40);
-  $('ob').innerHTML=`<div class="prog"><div class="bar" style="width:${pct}%"></div></div>
-  <div class="pnum">${pos+1} / ${SEQ.length}</div>
+  const t=T(),q=SEQ[pos],pct=Math.round(pos/SEQ.length*100);
+  const msg=t.lpMsg[Math.min(3,Math.floor(pct/25))];
+  $('ob').innerHTML=`
+  <div class="loveprog">
+    <div class="lp-track"><div class="lp-fill" style="width:${pct}%"></div><div class="lp-walker" style="left:${pct}%">💌</div><div class="lp-goal">💘</div></div>
+    <div class="lp-meta"><b>${msg}</b><span>${pos+1} / ${SEQ.length}</span></div>
+  </div>
   <div class="qtext">${q.t}</div>
   <div class="obody"><div class="lik">${t.likert.map((l,k)=>`
     <div class="lk ${ANS[pos]===k+1?'sel':''}" onclick="pick(${k+1})"><span class="n">${k+1}</span>${l}</div>`).join('')}</div>
