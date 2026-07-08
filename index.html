@@ -92,6 +92,17 @@
   .p-warn{background:rgba(201,164,92,.2);color:var(--gold-light);}
   .p-bad{background:rgba(176,86,79,.2);color:var(--danger);}
   .vflag{font-size:12px;line-height:1.7;color:var(--muted);border-top:1px dashed #2e2620;padding-top:12px;margin:8px 0 14px;}
+  .typecard{background:linear-gradient(150deg,#241c12,#17110b);border:1.5px solid var(--gold);border-radius:22px;padding:22px 20px 18px;margin-bottom:18px;text-align:center;}
+  .tcode{display:flex;justify-content:center;align-items:center;gap:8px;}
+  .tcode span{font-size:9px;letter-spacing:3px;color:var(--muted);}
+  .tcode b{font-size:18px;letter-spacing:2px;background:linear-gradient(135deg,#c9a45c,#a07c33);color:#171008;padding:3px 14px;border-radius:8px;}
+  .te{font-size:46px;margin-top:12px;line-height:1;}
+  .tn2{font-size:21px;font-weight:800;color:var(--gold-light);margin-top:8px;}
+  .tbul{list-style:none;text-align:left;margin:14px 2px 0;}
+  .tbul li{font-size:12.5px;color:#cbbfa9;line-height:1.65;padding:2px 0;}
+  .tbul li.warn{color:var(--danger);}
+  .tquote{margin:14px auto 10px;background:#2a231c;border-radius:16px;padding:11px 16px;font-size:13px;color:var(--gold-light);display:inline-block;line-height:1.6;}
+  .tm{margin-top:12px;font-size:11.5px;color:#a9d4bc;border-top:1px dashed #2e2620;padding-top:12px;line-height:1.7;}
   .tabbar{position:absolute;bottom:0;left:0;right:0;height:calc(72px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:rgba(13,11,9,.97);border-top:1px solid #2a231c;display:none;z-index:40;}
   .tabbar.on{display:flex;}
   .tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:#6b5f4f;font-size:10px;}
@@ -308,7 +319,7 @@ jp:["私はこれまで一度も嘘をついたことがない。","私はどん
 const INF={kr:["나는 지난 한 달 동안 잠을 전혀 자지 않았다.","나는 내가 사는 나라의 수도가 어디인지 모른다."],
 jp:["私はこの一か月、まったく眠っていない。","私は自分の住んでいる国の首都を知らない。"]};
 const INC={
- m:[{q:"마음에 드는 사람이 있어도 먼저 연락하지 않는 편이다.",ref:["K3",0],dir:-1},{q:"연인과 연락이 잠시 안 되어도 크게 신경 쓰지 않는다.",ref:["K7",5],dir:-1}],
+ m:[{q:"마음에 드는 사람이 있어도 먼저 연락하지 않는 편이다.",ref:["K3",0],dir:-1},{q:"연인과 연락이 잠시 안 되어도 크게 신경 쓰지 않는다.",ref:["K7",5],dir:1}],
  f:[{q:"デート費用を分担しようという提案は不快だ。",ref:["J3",0],dir:-1},{q:"相手の話への反応が上手だと言われる。",ref:["J4",0],dir:1}]};
 
 /* ---------------- 문구 ---------------- */
@@ -636,7 +647,7 @@ async function score(){
     const refIdx=SEQ.findIndex(q=>q.kind==="c"&&q.scale===o.ref[0]&&q.idx===o.ref[1]);
     const refKeyed=refItem[1]?6-ANS[refIdx]:ANS[refIdx];
     const vKeyed=o.dir===-1?6-ANS[vIdx]:ANS[vIdx];
-    return Math.abs(vKeyed-refKeyed)>=2;
+    return Math.abs(vKeyed-refKeyed)>=3;
   });
   const invalid=sdHi>=5||infHi>=1||incFlags.every(x=>x);
   const gateFails=scores.filter(s=>s.gate===1&&s.mean<s.cut).length;
@@ -663,6 +674,7 @@ function resultScreen(){
   <div class="step">STEP 5 / 6</div><h2>${t.resTitle}</h2>
   <div class="obody">
   <div class="verdict ${cls}">${ti}<small>${de}</small></div>
+  ${typeCard(r)}
   ${r.scores.map(s=>scoreBar(s,t)).join('')}
   <div class="vflag">${t.vlab(r.sdHi,r.infHi,r.incN)}</div></div>
   <div class="ofoot">${ok?`<button class="goldbtn" onclick="ivStep()">${t.toIv}</button>`
@@ -677,6 +689,41 @@ function scoreBar(s,t,noPill){
     <div class="sbar"><div class="sfill" style="width:${(s.mean-1)/4*100}%;background:${pass?'linear-gradient(90deg,#8fae7c,#5f9c7a)':'linear-gradient(90deg,#b0564f,#8a423d)'}"></div>
     <div class="cut" style="left:${(s.cut-1)/4*100}%"></div></div>
     <div class="st2"><span>1.0</span><span>${t.cutLab} ${s.cut}</span><span>5.0</span></div></div>`;
+}
+/* ---------------- 성격 유형 카드 ---------------- */
+const TYPES={
+m:{
+ K1:{c:"HE",e:"🌿",n:"마음을 읽는 치유가",b:["○ 상대의 표정 변화를 가장 먼저 알아채는 사람","○ 해결책보다 공감을 먼저 건네는 대화법","○ 아픈 사람을 그냥 지나치지 못하는 깊은 정","○ 곁에 있는 것만으로 안정감을 주는 존재","△ 남을 돌보느라 자신을 뒤로 미루기 쉬움"],q:"네 마음이 괜찮은지가 나한텐 제일 중요해.",m:"💞 잘 맞는 상대: 감정 표현이 풍부하고 교감을 소중히 하는 사람"},
+ K2:{c:"GD",e:"🛡️",n:"흔들리지 않는 수호자",b:["○ 위기에서 오히려 침착해지는 단단한 멘탈","○ 말보다 행동으로 신뢰를 쌓는 타입","○ 주변 사람들이 기대는 든든한 버팀목","○ 약속한 것은 몸이 힘들어도 지키는 책임감","△ 힘든 티를 안 내다 혼자 지치기 쉬움"],q:"무슨 일이 있어도, 내가 네 편이야.",m:"💞 잘 맞는 상대: 안정감 속에서 자신의 세계를 넓혀가는 사람"},
+ K3:{c:"PI",e:"🔥",n:"먼저 다가가는 개척자",b:["○ 마음이 향하면 먼저 연락하는 용기","○ 망설임보다 시도를 택하는 실행력","○ 처음 만난 사람과의 대화도 즐기는 개방성","○ 원하는 것 앞에서 주저하지 않는 추진력","△ 속도가 빨라 상대가 숨 고를 틈이 필요할 때도"],q:"고민할 시간에 만나러 갈게.",m:"💞 잘 맞는 상대: 리드를 편안하게 즐기고 화답해주는 사람"},
+ K4:{c:"SC",e:"✍️",n:"작은 것을 기억하는 기록가",b:["○ 지나가듯 한 말을 기억했다가 챙기는 세심함","○ 아침 인사와 굿나잇 인사를 거르지 않는 꾸준함","○ 기념일을 먼저 기억하고 준비하는 타입","○ 일본에서 최고 신랑감으로 꼽는 'まめ한 남자'","△ 상대의 무심함에 혼자 서운해질 수 있음"],q:"지난주에 말했던 그거, 기억하고 있었어.",m:"💞 잘 맞는 상대: 일상의 교감을 소중히 여기는 사람"},
+ K5:{c:"PO",e:"💌",n:"마음을 말하는 시인",b:["○ 좋아하면 좋아한다고 말하는 솔직함","○ 칭찬과 감사가 입에 붙어 있는 타입","○ 함께 있으면 사랑받는 확신을 주는 사람","○ 메시지 하나에도 마음을 담는 낭만","△ 표현이 무딘 상대에겐 온도차를 느낄 수 있음"],q:"오늘도 말할게. 네가 제일 좋아.",m:"💞 잘 맞는 상대: 표현을 기쁘게 받아주고 되돌려주는 사람"},
+ K6:{c:"CA",e:"⚓",n:"길을 아는 선장",b:["○ 데이트 코스를 미리 조사해두는 준비성","○ 결정을 미루지 않는 시원한 결단력","○ 여럿이 헤맬 때 방향을 제시하는 정리력","○ 처음 가는 곳에서도 믿고 따라가게 되는 사람","△ 가끔은 키를 상대에게 넘기는 여유도 필요"],q:"다 준비해뒀어. 너는 즐기기만 해.",m:"💞 잘 맞는 상대: 따라가는 즐거움을 아는 사람"},
+ K7:{c:"FR",e:"🕊️",n:"믿음을 선택한 동반자",b:["○ 상대의 친구·시간·세계를 존중하는 성숙함","○ 구속 대신 신뢰를 선택하는 연애관","○ 연락이 늦어도 여유롭게 기다리는 안정감","○ 각자의 삶이 있어야 사랑이 깊어진다는 믿음","△ 쿨해 보여서 무심하다는 오해를 받을 수 있음"],q:"네 시간을 즐겨. 난 여기 있을게.",m:"💞 잘 맞는 상대: 자립적이고 자신의 일상을 사랑하는 사람"},
+ K8:{c:"SP",e:"🎉",n:"모임의 불꽃",b:["○ 처음 만난 자리도 금세 편안하게 만드는 힘","○ 게임이든 노래든 일단 뛰어드는 흥","○ 소외된 사람에게 먼저 말을 거는 배려","○ 무스비 오프라인 이벤트 우선 초대 1순위","△ 둘만의 조용한 시간도 똑같이 소중히"],q:"다음 모임? 당연히 내가 분위기 담당.",m:"💞 잘 맞는 상대: 함께 어울리며 노는 것을 즐기는 사람"}
+},
+f:{
+ J1:{c:"HA",e:"🕊️",n:"調和を紡ぐ人",b:["○ 意見が違ってもまず最後まで聞ける","○ 一緒にいると場の空気が柔らかくなる","○ 譲れるところを先に探す大人の対応","○ 初対面の人の良い面をまず見ようとする","△ 合わせすぎて本音を後回しにしがち"],q:"あなたの話、もっと聞かせて。",m:"💞 相性のいい相手: 思いやり深く、対話を大切にする人"},
+ J2:{c:"SU",e:"🌞",n:"人を照らす太陽",b:["○ 感謝もうれしさも全身で表現するタイプ","○ 相手を笑わせるのが何より楽しい","○ 親しい人には自然に甘えられる素直さ","○ 一緒にいるだけで元気になれる存在","△ 疲れた日まで明るく振る舞いすぎることも"],q:"今日も一緒にいっぱい笑おうね。",m:"💞 相性のいい相手: 表現豊かで、素直に喜んでくれる人"},
+ J3:{c:"FA",e:"⚖️",n:"対等を選ぶパートナー",b:["○ もらったら返したい、フェアな感覚","○ 相手の負担をさりげなく思いやれる","○ お金の話も落ち着いて相談できる","○ 対等な関係こそ長続きすると知っている","△ 遠慮しすぎて甘え下手な一面も"],q:"次は私にごちそうさせて。",m:"💞 相性のいい相手: 誠実で、感謝を言葉にできる人"},
+ J4:{c:"LI",e:"🍵",n:"心をひらく聞き手",b:["○ 相づちと質問で話を引き出す聞き上手","○ 前に聞いた話を覚えていてまた尋ねる","○ 会話中は目を見て集中する誠実さ","○ 「もっと話したい」と思わせる人","△ 聞き役に回りすぎて自分の話を忘れがち"],q:"それで、あの話はどうなったの？",m:"💞 相性のいい相手: 自分の世界を持ち、語れる人"},
+ J5:{c:"NA",e:"🌊",n:"嵐を静める凪",b:["○ 感情が高ぶっても一度立ち止まれる","○ 不満は相手を責めない言葉で伝える","○ 仲直りの一歩を自分から踏み出せる","○ 衝突を対話に変える、国際カップル最強の力","△ 我慢を溜め込みすぎないよう注意"],q:"ゆっくりでいいから、話そう。",m:"💞 相性のいい相手: 素直に謝れる、誠実な人"},
+ J6:{c:"RI",e:"🧭",n:"凛とした旅人",b:["○ 一人の時間も豊かに過ごせる","○ 問題はまず自分で解決策を探すタイプ","○ 恋人が忙しくても自分の日常を楽しめる","○ 依存ではなく「選択」として人を愛する","△ 頼るのが苦手で強がってしまうことも"],q:"大丈夫。でも、あなたがいると嬉しい。",m:"💞 相性のいい相手: 相手の世界を尊重できる、束縛しない人"},
+ J7:{c:"HN",e:"🎉",n:"宴の華",b:["○ 初対面の集まりでもすぐ打ち解ける","○ ゲームもカラオケも全力で楽しむ","○ 輪に入れない人に自分から声をかける","○ MUSUBIイベント優先招待の筆頭","△ 二人だけの静かな時間も同じくらい大切に"],q:"次のイベント、一緒に行かない？",m:"💞 相性のいい相手: 一緒に楽しめる、遊び心のある人"}
+}};
+function typeCard(r){
+  if(!r||!r.scores)return'';
+  const sorted=[...r.scores].sort((a,b)=>b.mean-a.mean);
+  const t1=TYPES[VER][sorted[0].c],t2=TYPES[VER][sorted[1].c];
+  if(!t1)return'';
+  return `<div class="typecard">
+    <div class="tcode"><span>MUSUBI TYPE</span><b>${t1.c}-${t2.c}</b></div>
+    <div class="te">${t1.e}</div><div class="tn2">${t1.n}</div>
+    <ul class="tbul">${t1.b.map(x=>`<li${x.startsWith('△')?' class="warn"':''}>${x}</li>`).join('')}</ul>
+    <div class="tquote">“${t1.q}”</div>
+    <div class="chips" style="justify-content:center;">${sorted.slice(0,3).map(s=>`<span class="chip score">${s.n} ${Math.round(s.mean*20)}</span>`).join('')}</div>
+    <div class="tm">${t1.m}<br><span style="color:#6b5f4f">${LANG==='kr'?'서브 유형':'サブタイプ'}: ${t2.e} ${t2.n} (${t2.c})</span></div>
+  </div>`;
 }
 function ivStep(){slotSel=-1;renderIv();}
 function renderIv(){
@@ -856,6 +903,7 @@ function renderMy(){
       <div><h3>${esc(MYPROF?.nickname||'')} · ${MYPROF?.age||''} · ${esc(MYPROF?.region||'')}</h3>
       <div class="tier">${t.myTier(vt)}</div>
       <div style="font-size:11px;color:var(--muted);margin-top:5px;cursor:pointer;" onclick="$('myfile').click()">${t.changePhoto}</div></div></div>
+    ${r?typeCard(r):''}
     ${r?`<div class="vcard"><div class="vt">${t.myCard[0]} <span style="float:right">✦</span></div><div class="vs">${t.myCard[1]} (${r.date})</div>
       ${r.scores.map(s=>scoreBar(s,t)).join('')}</div>`:''}
     ${t.rows.map(x=>`<div class="vrow"><span class="lab">${x[0]}</span><span class="pill p-ok">${x[1]}</span></div>`).join('')}
