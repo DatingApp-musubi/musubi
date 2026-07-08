@@ -148,6 +148,13 @@
   .cmbchip{border:1px solid #3a3128;background:var(--surface2);color:var(--gold-light);font-size:10.5px;font-weight:800;padding:5px 9px;border-radius:12px;cursor:pointer;letter-spacing:1px;}
   .cmbchip:active{border-color:var(--gold);}
   .combocard{margin-top:12px;background:#14100b;border:1px dashed rgba(201,164,92,.5);border-radius:16px;padding:16px;text-align:center;}
+  .vidbtn{width:100%;padding:12px;border-radius:12px;border:1.5px dashed #3a3128;background:none;color:var(--muted);font-size:13px;cursor:pointer;margin-bottom:14px;}
+  .vidbtn.has{border-style:solid;border-color:rgba(95,156,122,.6);color:var(--ok);}
+  .vidov{position:absolute;inset:0;background:rgba(0,0,0,.93);z-index:85;display:none;align-items:center;justify-content:center;}
+  .vidov.show{display:flex;}
+  .vidov video{width:92%;max-height:72%;border-radius:18px;background:#000;}
+  .vidclose{position:absolute;top:max(18px,env(safe-area-inset-top));left:18px;font-size:22px;color:#fff;cursor:pointer;}
+  .vplay{position:absolute;right:16px;bottom:150px;width:48px;height:48px;border-radius:50%;background:rgba(13,11,9,.75);border:1.5px solid var(--gold);color:var(--gold-light);display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;backdrop-filter:blur(4px);}
   .pinfo{position:absolute;left:20px;right:20px;bottom:18px;}
   .pinfo h2{font-size:24px;font-weight:700;}
   .pinfo h2 .age{font-size:19px;font-weight:400;color:#d8cdbb;margin-left:8px;}
@@ -303,6 +310,11 @@
     <div class="tiers" id="y-body"></div>
   </div>
 
+  <div class="vidov" id="vidov" onclick="closeVideo()">
+    <video id="vidplayer" playsinline controls></video>
+    <div class="vidclose">✕</div>
+  </div>
+
   <div class="matchov" id="matchov">
     <div class="knot">🎀</div><h2 id="match-h"></h2><p id="matchname"></p>
     <button class="goldbtn" onclick="toMsg()" id="match-btn"></button>
@@ -377,6 +389,7 @@ kr:{
  pickTitle:"가입 유형을 선택해 주세요",
  profTitle:"프로필을 만들어 주세요",profDesc:"사진과 닉네임은 상대 회원에게 공개됩니다.",
  nick:"닉네임",ageL:"나이",regionL:"지역 (예: 서울)",bioL:"한 줄 소개",photoReq:"사진을 선택해 주세요",
+ videoBtn:"🎬 10초 소개 영상 올리기 (선택)",videoSet:"🎬 영상 준비 완료 ✓",videoLong:"영상은 10초 이하만 가능합니다.",videoBig:"영상 파일이 너무 큽니다 (40MB 이하).",videoRow:"소개 영상",videoNone:"없음",videoPlay:"▶ 재생",videoChange:"🎬 영상 올리기/변경",
  docTitle:"신분을 확인합니다",docDesc:"서류는 확인 후 즉시 파기됩니다. (탭하여 업로드 — 데모)",
  docs:[{ic:"🪪",n:"신분증",s:"본인 확인용"},{ic:"💍",n:"혼인관계증명서",s:"독신 여부 확인 (3개월 이내 발급)"}],
  up:["업로드","업로드 완료 ✓"],next:"다음",saving:"저장 중…",
@@ -458,6 +471,7 @@ jp:{
  pickTitle:"会員タイプを選択してください",
  profTitle:"プロフィールを作成してください",profDesc:"写真とニックネームは相手会員に公開されます。",
  nick:"ニックネーム",ageL:"年齢",regionL:"地域（例: 東京）",bioL:"ひとこと紹介",photoReq:"写真を選択してください",
+ videoBtn:"🎬 10秒自己紹介動画（任意）",videoSet:"🎬 動画準備完了 ✓",videoLong:"動画は10秒以内にしてください。",videoBig:"動画ファイルが大きすぎます（40MB以下）。",videoRow:"自己紹介動画",videoNone:"なし",videoPlay:"▶ 再生",videoChange:"🎬 動画をアップ/変更",
  docTitle:"本人確認を行います",docDesc:"書類は確認後、直ちに破棄されます。（タップしてアップロード — デモ）",
  docs:[{ic:"🪪",n:"身分証",s:"本人確認用"},{ic:"💍",n:"独身証明書",s:"3ヶ月以内発行"}],
  up:["アップロード","完了 ✓"],next:"次へ",saving:"保存中…",
@@ -527,7 +541,7 @@ jp:{
 /* ---------------- 전역 상태 ---------------- */
 let ME=null, MYPROF=null, VER=null, LANG='kr';
 let SEQ=[], ANS=[], pos=0, upDocs=new Set(), slotSel=-1, RESULT=null;
-let CARDS=[], idx=0, ROOM=null, photoBlob=null, rtChannel=null;
+let CARDS=[], idx=0, ROOM=null, photoBlob=null, videoBlob=null, rtChannel=null;
 const $=id=>document.getElementById(id);
 const T=()=>L[LANG];
 /* ---------------- 언어 전환 ---------------- */
@@ -636,7 +650,7 @@ function pickVer(){
     <button class="verbtn" onclick="setVer('f')"><span class="ic">👰</span><span><b>${t.pickF}</b><span>${t.pickFd}</span></span></button>
   </div>`;
 }
-function setVer(v){VER=v;if(!LANGSET)LANG=v==='m'?'kr':'jp';updateLangSw();photoBlob=null;profileStep();}
+function setVer(v){VER=v;if(!LANGSET)LANG=v==='m'?'kr':'jp';updateLangSw();photoBlob=null;videoBlob=null;profileStep();}
 function profileStep(){
   ONBFN=profileStep;
   const t=T();
@@ -645,6 +659,8 @@ function profileStep(){
   <div class="obody">
     <div class="photopick" id="ppick" onclick="$('pfile').click()">📷</div>
     <input type="file" id="pfile" accept="image/*" style="display:none" onchange="pickPhoto(this)">
+    <button type="button" class="vidbtn ${videoBlob?'has':''}" id="vbtn" onclick="$('vfile').click()">${videoBlob?t.videoSet:t.videoBtn}</button>
+    <input type="file" id="vfile" accept="video/mp4,video/quicktime,video/webm" style="display:none" onchange="pickVideo(this)">
     <div class="field"><label>${t.nick}</label><input id="p-nick" maxlength="12"></div>
     <div class="field"><label>${t.ageL}</label><input id="p-age" type="number" min="18" max="99"></div>
     <div class="field"><label>${t.regionL}</label><input id="p-region" maxlength="20"></div>
@@ -666,6 +682,27 @@ function pickPhoto(inp){
   };img.src=e.target.result;};
   rd.readAsDataURL(f);
 }
+function pickVideo(inp){
+  const f=inp.files[0];if(!f)return;
+  const t=T(),err=$('p-err');
+  if(f.size>40*1024*1024){if(err)err.textContent=t.videoBig;return;}
+  const u=URL.createObjectURL(f),v=document.createElement('video');
+  v.preload='metadata';
+  v.onloadedmetadata=()=>{
+    URL.revokeObjectURL(u);
+    const b=$('vbtn');
+    if(v.duration>11){videoBlob=null;if(err)err.textContent=t.videoLong;if(b){b.textContent=t.videoBtn;b.classList.remove('has');}}
+    else{videoBlob=f;if(err)err.textContent='';if(b){b.textContent=t.videoSet;b.classList.add('has');}}
+  };
+  v.src=u;
+}
+async function uploadVideo(){
+  if(!LIVE||!videoBlob)return null;
+  const path=`${ME.id}/intro.mp4`;
+  const {error}=await sb.storage.from('photos').upload(path,videoBlob,{upsert:true,contentType:videoBlob.type||'video/mp4'});
+  if(error)throw error;
+  return sb.storage.from('photos').getPublicUrl(path).data.publicUrl+'?v='+Date.now();
+}
 async function saveProfile(){
   const t=T(),err=$('p-err');err.textContent='';
   const nick=$('p-nick').value.trim(),age=parseInt($('p-age').value),region=$('p-region').value.trim(),bio=$('p-bio').value.trim();
@@ -680,11 +717,15 @@ async function saveProfile(){
       if(ue)throw ue;
       photo_url=sb.storage.from('photos').getPublicUrl(path).data.publicUrl+'?v='+Date.now();
     }
+    let video_url=MYPROF?.video_url||null;
+    if(LIVE&&videoBlob){try{video_url=await uploadVideo();}catch(e){console.warn('video upload:',e.message);}}
     if(LIVE){
-      const {error}=await sb.from('profiles').upsert({id:ME.id,gender:VER,nickname:nick,age,region,bio,photo_url,lang:LANG});
+      let payload={id:ME.id,gender:VER,nickname:nick,age,region,bio,photo_url,lang:LANG,video_url};
+      let {error}=await sb.from('profiles').upsert(payload);
+      if(error&&/video_url/.test(error.message||'')){delete payload.video_url;({error}=await sb.from('profiles').upsert(payload));}
       if(error)throw error;
-      MYPROF={id:ME.id,gender:VER,nickname:nick,age,region,bio,photo_url,lang:LANG};
-    }else{MYPROF={nickname:nick,age,region,bio,photo_url:null};}
+      MYPROF=payload;
+    }else{MYPROF={nickname:nick,age,region,bio,photo_url:null,video_url:null};}
     upDocs=new Set();docStep();
   }catch(e){err.textContent=e.message;$('p-next').disabled=false;$('p-next').textContent=t.next;}
 }
@@ -968,7 +1009,7 @@ async function loadCards(){
     const {data:profs}=await sb.from('profiles').select('*')
       .eq('gender',VER==='m'?'f':'m').neq('id',ME.id).not('mpi','is',null).limit(30);
     CARDS=(profs||[]).filter(p=>!likedSet.has(p.id)&&['pass','hold'].includes(p.mpi?.verdict))
-      .map(p=>({real:true,id:p.id,n:esc(p.nickname),a:p.age||'',l:esc([p.region,p.bio].filter(Boolean).join(' · ')),ph:p.photo_url,c:chipsFromMpi(p.mpi),ty:typeOf(p.mpi,VER==='m'?'f':'m')}));
+      .map(p=>({real:true,id:p.id,n:esc(p.nickname),a:p.age||'',l:esc([p.region,p.bio].filter(Boolean).join(' · ')),ph:p.photo_url,v:p.video_url||null,c:chipsFromMpi(p.mpi),ty:typeOf(p.mpi,VER==='m'?'f':'m')}));
   }
   if(CARDS.length===0)CARDS=T().demoProfiles[VER==='m'?'f':'m'].map(p=>({real:false,...p}));
   renderCards();
@@ -983,6 +1024,7 @@ function renderCards(){
     if(k>idx){d.style.transform='scale(.95) translateY(10px)';d.style.filter='brightness(.6)';}
     d.innerHTML=`<div class="photo" ${p.ph?`style="background-image:url('${p.ph}')"`:''}></div><div class="grad"></div>
       <div class="vbadge">${t.vbadge}</div>${p.ty?`<div class="tbadge">${p.ty.e} ${p.ty.s}</div>`:p.real?'':`<div class="dbadge">${t.demoBadge}</div>`}
+      ${p.v?`<div class="vplay" onclick="playVideo('${p.v}')">▶</div>`:''}
       <div class="pinfo"><h2>${p.n}<span class="age">${p.a}</span></h2><div class="loc">📍 ${p.l}</div>
       <div class="chips">${(p.c||[]).map(x=>`<span class="chip ${x[1]?'score':''}">${x[0]}</span>`).join('')}</div></div>`;
     wrap.appendChild(d);
@@ -1093,6 +1135,10 @@ function renderMy(){
     ${r?`<div class="vcard"><div class="vt">${t.myCard[0]} <span style="float:right">✦</span></div><div class="vs">${t.myCard[1]} (${r.date})</div>
       ${r.scores.map(s=>scoreBar(s,t)).join('')}</div>`:''}
     ${t.rows.map(x=>`<div class="vrow"><span class="lab">${x[0]}</span><span class="pill p-ok">${x[1]}</span></div>`).join('')}
+    <div class="vrow"><span class="lab">${t.videoRow}</span><span style="font-size:12.5px;">
+      ${MYPROF?.video_url?`<span style="color:var(--gold);cursor:pointer;" onclick="playVideo('${MYPROF.video_url}')">${t.videoPlay}</span> · `:`<span style="color:var(--muted)">${t.videoNone}</span> · `}
+      <span style="color:var(--gold);cursor:pointer;" onclick="$('myvfile').click()">${t.videoChange}</span></span></div>
+    <input type="file" id="myvfile" accept="video/mp4,video/quicktime,video/webm" style="display:none" onchange="changeVideo(this)">
     <div class="vrow link" onclick="openTypes()"><span class="lab">${t.typesRow}</span><span style="color:var(--gold);font-size:13px">8+7 ›</span></div>
     <div class="vrow link" onclick="showScreen('scr-tier')"><span class="lab">${t.memRow[0]}</span><span style="color:var(--gold);font-size:13px">${t.memRow[1]}</span></div>
     <button class="ghostbtn" onclick="logout()" style="color:#8d7f6d;">${t.logout}</button>`;
@@ -1113,6 +1159,26 @@ async function changePhoto(inp){
     },'image/jpeg',.85);
   };img.src=e.target.result;};
   rd.readAsDataURL(f);
+}
+function playVideo(url){const v=$('vidplayer');v.src=url;$('vidov').classList.add('show');v.play().catch(()=>{});}
+function closeVideo(){const v=$('vidplayer');v.pause();v.src='';$('vidov').classList.remove('show');}
+async function changeVideo(inp){
+  const f=inp.files[0];if(!f||!LIVE)return;
+  const t=T();
+  if(f.size>40*1024*1024){alert(t.videoBig);return;}
+  const u=URL.createObjectURL(f),v=document.createElement('video');
+  v.preload='metadata';
+  v.onloadedmetadata=async()=>{
+    URL.revokeObjectURL(u);
+    if(v.duration>11){alert(t.videoLong);return;}
+    videoBlob=f;
+    try{
+      const url=await uploadVideo();
+      let {error}=await sb.from('profiles').update({video_url:url}).eq('id',ME.id);
+      if(!error){MYPROF.video_url=url;renderMy();}
+    }catch(e){console.warn(e);}
+  };
+  v.src=u;
 }
 function hideMatch(){$('matchov').classList.remove('show');}
 function toMsg(){hideMatch();showScreen('scr-chats');setTab('scr-chats');}
