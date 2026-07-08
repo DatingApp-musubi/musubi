@@ -415,6 +415,7 @@ kr:{
  shareBtn:"📸 유형 카드 이미지 저장·공유",shareCTA:"나의 연애 유형 무료 진단",
  guestBtn:"🔮 가입 없이 성격검사 해보기 (무료)",guestJoin:"💘 나와 잘 맞는 상대 보러 가기 — 회원가입",guestUse:"방금 한 검사 결과 그대로 사용하기",guestNote:"결과는 저장되지 않아요. 가입하면 검사 결과가 그대로 이어집니다.",
  reportTitle:"신고·차단",reportReasons:["부적절한 사진·프로필","불쾌한 메시지·언행","사기·스팸 의심"],reportDone:"신고가 접수되었습니다. 운영진이 24시간 내 확인 후 조치합니다.",blockBtn:"🚫 이 회원 차단하기",blockDone:"차단했습니다. 서로에게 더 이상 표시되지 않습니다.",cancel:"닫기",
+ privacyLink:"개인정보처리방침",termsLink:"이용약관",
  docTitle:"신분을 확인합니다",docDesc:"서류는 확인 후 즉시 파기됩니다. (탭하여 업로드 — 데모)",
  docs:[{ic:"🪪",n:"신분증",s:"본인 확인용"},{ic:"💍",n:"혼인관계증명서",s:"독신 여부 확인 (3개월 이내 발급)"}],
  up:["업로드","업로드 완료 ✓"],next:"다음",saving:"저장 중…",
@@ -503,6 +504,7 @@ jp:{
  shareBtn:"📸 タイプカードを保存・シェア",shareCTA:"あなたの恋愛タイプを無料診断",
  guestBtn:"🔮 登録なしで性格診断を試す（無料）",guestJoin:"💘 相性のいい相手を見る — 新規登録",guestUse:"先ほどの診断結果をそのまま使う",guestNote:"結果は保存されません。登録すると診断結果がそのまま引き継がれます。",
  reportTitle:"通報・ブロック",reportReasons:["不適切な写真・プロフィール","不快なメッセージ・言動","詐欺・スパムの疑い"],reportDone:"通報を受け付けました。運営が24時間以内に確認し対応します。",blockBtn:"🚫 この会員をブロック",blockDone:"ブロックしました。互いに表示されなくなります。",cancel:"閉じる",
+ privacyLink:"プライバシーポリシー",termsLink:"利用規約",
  docTitle:"本人確認を行います",docDesc:"書類は確認後、直ちに破棄されます。（タップしてアップロード — デモ）",
  docs:[{ic:"🪪",n:"身分証",s:"本人確認用"},{ic:"💍",n:"独身証明書",s:"3ヶ月以内発行"}],
  up:["アップロード","完了 ✓"],next:"次へ",saving:"保存中…",
@@ -626,6 +628,7 @@ function splash(demoMode){
       <button class="goldbtn" onclick="${demoMode?'pickVer()':'authScreen(\'signup\')'}">${t.signup}</button>
       <button class="ghostbtn" onclick="${demoMode?'pickVer()':'authScreen(\'login\')'}">${t.toLogin}</button>
       <button class="ghostbtn" style="border-style:dashed;color:var(--gold);" onclick="guestStart()">${t.guestBtn}</button>
+      <div style="margin-top:12px;text-align:center;font-size:10.5px;"><a href="privacy.html" target="_blank" style="color:#8d7f6d;text-decoration:none;">${t.privacyLink}</a><span style="color:#4a4137;"> · </span><a href="terms.html" target="_blank" style="color:#8d7f6d;text-decoration:none;">${t.termsLink}</a></div>
     </div>`;
 }
 function authScreen(mode){
@@ -1293,6 +1296,8 @@ function renderMy(){
     <div class="vrow link" onclick="previewMe()"><span class="lab">👁 ${t.previewRow}</span><span style="color:var(--gold);font-size:13px">›</span></div>
     <div class="vrow link" onclick="openTypes()"><span class="lab">${t.typesRow}</span><span style="color:var(--gold);font-size:13px">8+7 ›</span></div>
     <div class="vrow link" onclick="showScreen('scr-tier')"><span class="lab">${t.memRow[0]}</span><span style="color:var(--gold);font-size:13px">${t.memRow[1]}</span></div>
+    <div class="vrow link" onclick="window.open('privacy.html','_blank')"><span class="lab">${t.privacyLink}</span><span style="color:var(--gold);font-size:13px">›</span></div>
+    <div class="vrow link" onclick="window.open('terms.html','_blank')"><span class="lab">${t.termsLink}</span><span style="color:var(--gold);font-size:13px">›</span></div>
     <button class="ghostbtn" onclick="logout()" style="color:#8d7f6d;">${t.logout}</button>`;
 }
 async function changePhoto(inp){
