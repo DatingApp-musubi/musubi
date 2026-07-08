@@ -181,6 +181,9 @@
   .matchov h2{font-size:25px;color:var(--gold-light);font-weight:800;margin-bottom:10px;}
   .matchov p{color:var(--muted);font-size:13.5px;line-height:1.7;margin-bottom:26px;}
   .matchov .goldbtn{width:auto;padding:14px 36px;border-radius:26px;}
+  .repbtn{width:100%;padding:13px;border-radius:12px;border:1px solid #3a3128;background:var(--surface2);color:var(--text);font-size:13.5px;cursor:pointer;margin-bottom:8px;font-family:inherit;}
+  .repbtn.danger{border-color:rgba(176,86,79,.55);color:var(--danger);}
+  .pinfo .rep{margin-left:10px;color:#7d7060;cursor:pointer;font-size:14px;}
   .secthead{padding:2px 20px 12px;font-size:13px;color:var(--muted);flex-shrink:0;}
   .mgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 16px 12px;overflow-y:auto;}
   .mcell{border-radius:18px;overflow:hidden;position:relative;height:200px;background-size:cover;background-position:center 20%;background-color:#241d15;cursor:pointer;}
@@ -288,6 +291,7 @@
       <div class="back" onclick="showScreen('scr-chats')">‹</div>
       <div class="avatar" id="r-avatar" style="width:42px;height:42px;"></div>
       <div class="who"><b id="r-name"></b><span id="r-status"></span></div>
+      <div class="icbtn" onclick="if(ROOM)reportMenu(ROOM)" title="⚑">⚑</div>
       <div class="icbtn">📞</div>
     </div>
     <div class="msgs" id="msgs"></div>
@@ -330,6 +334,11 @@
     <div class="knot">🎀</div><h2 id="match-h"></h2><p id="matchname"></p>
     <button class="goldbtn" onclick="toMsg()" id="match-btn"></button>
     <button class="ghostbtn" onclick="hideMatch()" id="match-skip"></button>
+  </div>
+
+  <div class="matchov" id="repov">
+    <h2 id="rep-h" style="margin-bottom:20px;"></h2>
+    <div id="repbody" style="width:100%;max-width:300px;"></div>
   </div>
 
   <div class="tabbar" id="tabbar">
@@ -403,6 +412,9 @@ kr:{
  videoBtn:"🎬 10초 소개 영상 올리기 (선택)",videoSet:"🎬 영상 준비 완료 ✓",videoLong:"영상은 10초 이하만 가능합니다.",videoBig:"영상 파일이 너무 큽니다 (40MB 이하).",
  videoCodec:"이 영상 형식(HEVC·고효율)은 브라우저에서 재생되지 않아요. 아이폰: 설정→카메라→형식→'높은 호환성'으로 바꾼 뒤 다시 촬영해 주세요.",
  videoConv:"🎬 영상 변환 중 ",videoConvFail:"영상 변환에 실패했습니다. 다른 영상으로 시도해 주세요.",videoRow:"소개 영상",videoNone:"없음",videoPlay:"▶ 재생",videoChange:"🎬 영상 올리기/변경",
+ shareBtn:"📸 유형 카드 이미지 저장·공유",shareCTA:"나의 연애 유형 무료 진단",
+ guestBtn:"🔮 가입 없이 성격검사 해보기 (무료)",guestJoin:"💘 나와 잘 맞는 상대 보러 가기 — 회원가입",guestUse:"방금 한 검사 결과 그대로 사용하기",guestNote:"결과는 저장되지 않아요. 가입하면 검사 결과가 그대로 이어집니다.",
+ reportTitle:"신고·차단",reportReasons:["부적절한 사진·프로필","불쾌한 메시지·언행","사기·스팸 의심"],reportDone:"신고가 접수되었습니다. 운영진이 24시간 내 확인 후 조치합니다.",blockBtn:"🚫 이 회원 차단하기",blockDone:"차단했습니다. 서로에게 더 이상 표시되지 않습니다.",cancel:"닫기",
  docTitle:"신분을 확인합니다",docDesc:"서류는 확인 후 즉시 파기됩니다. (탭하여 업로드 — 데모)",
  docs:[{ic:"🪪",n:"신분증",s:"본인 확인용"},{ic:"💍",n:"혼인관계증명서",s:"독신 여부 확인 (3개월 이내 발급)"}],
  up:["업로드","업로드 완료 ✓"],next:"다음",saving:"저장 중…",
@@ -488,6 +500,9 @@ jp:{
  videoBtn:"🎬 10秒自己紹介動画（任意）",videoSet:"🎬 動画準備完了 ✓",videoLong:"動画は10秒以内にしてください。",videoBig:"動画ファイルが大きすぎます（40MB以下）。",
  videoCodec:"この動画形式（HEVC・高効率）はブラウザで再生できません。iPhone: 設定→カメラ→フォーマット→「互換性優先」に変更して撮り直してください。",
  videoConv:"🎬 動画変換中 ",videoConvFail:"動画の変換に失敗しました。別の動画でお試しください。",videoRow:"自己紹介動画",videoNone:"なし",videoPlay:"▶ 再生",videoChange:"🎬 動画をアップ/変更",
+ shareBtn:"📸 タイプカードを保存・シェア",shareCTA:"あなたの恋愛タイプを無料診断",
+ guestBtn:"🔮 登録なしで性格診断を試す（無料）",guestJoin:"💘 相性のいい相手を見る — 新規登録",guestUse:"先ほどの診断結果をそのまま使う",guestNote:"結果は保存されません。登録すると診断結果がそのまま引き継がれます。",
+ reportTitle:"通報・ブロック",reportReasons:["不適切な写真・プロフィール","不快なメッセージ・言動","詐欺・スパムの疑い"],reportDone:"通報を受け付けました。運営が24時間以内に確認し対応します。",blockBtn:"🚫 この会員をブロック",blockDone:"ブロックしました。互いに表示されなくなります。",cancel:"閉じる",
  docTitle:"本人確認を行います",docDesc:"書類は確認後、直ちに破棄されます。（タップしてアップロード — デモ）",
  docs:[{ic:"🪪",n:"身分証",s:"本人確認用"},{ic:"💍",n:"独身証明書",s:"3ヶ月以内発行"}],
  up:["アップロード","完了 ✓"],next:"次へ",saving:"保存中…",
@@ -559,6 +574,7 @@ jp:{
 let ME=null, MYPROF=null, VER=null, LANG='kr';
 let SEQ=[], ANS=[], pos=0, upDocs=new Set(), slotSel=-1, RESULT=null;
 let CARDS=[], idx=0, ROOM=null, photoBlob=null, videoBlob=null, rtChannel=null;
+let GUEST=false, BLOCKED=new Set();
 const $=id=>document.getElementById(id);
 const T=()=>L[LANG];
 /* ---------------- 언어 전환 ---------------- */
@@ -609,6 +625,7 @@ function splash(demoMode){
     <div class="ofoot">
       <button class="goldbtn" onclick="${demoMode?'pickVer()':'authScreen(\'signup\')'}">${t.signup}</button>
       <button class="ghostbtn" onclick="${demoMode?'pickVer()':'authScreen(\'login\')'}">${t.toLogin}</button>
+      <button class="ghostbtn" style="border-style:dashed;color:var(--gold);" onclick="guestStart()">${t.guestBtn}</button>
     </div>`;
 }
 function authScreen(mode){
@@ -668,6 +685,20 @@ function pickVer(){
   </div>`;
 }
 function setVer(v){VER=v;if(!LANGSET)LANG=v==='m'?'kr':'jp';updateLangSw();photoBlob=null;videoBlob=null;profileStep();}
+/* ---------------- 게스트(비회원) 무료 검사 ---------------- */
+function guestStart(){GUEST=true;guestPick();}
+function guestPick(){
+  ONBFN=guestPick;
+  const t=T();
+  $('ob').innerHTML=`<div class="step">FREE TEST</div><h2>${t.pickTitle}</h2>
+  <div class="obody" style="padding-top:12px;">
+    <button class="verbtn" onclick="guestSetVer('m')"><span class="ic">🤵</span><span><b>${t.pickM}</b><span>MPI-M · 74</span></span></button>
+    <button class="verbtn" onclick="guestSetVer('f')"><span class="ic">👰</span><span><b>${t.pickF}</b><span>MPI-F · 66</span></span></button>
+    <div style="font-size:11.5px;color:var(--muted);line-height:1.6;padding:4px;">${t.guestNote}</div>
+  </div>
+  <div class="ofoot"><button class="backlink" onclick="GUEST=false;splash(${LIVE?'false':'true'})">‹</button></div>`;
+}
+function guestSetVer(v){VER=v;if(!LANGSET){LANG=v==='m'?'kr':'jp';updateLangSw();}startTest();}
 function profileStep(){
   ONBFN=profileStep;
   const t=T();
@@ -797,10 +828,22 @@ function docStep(){
 function mpiIntro(){
   ONBFN=mpiIntro;
   const t=T();
+  let gs=null;try{const g=JSON.parse(localStorage.getItem('musubi_guest'));if(g&&g.VER===VER&&g.RESULT)gs=g;}catch(e){}
   $('ob').innerHTML=`<div class="prog"><div class="bar" style="width:45%"></div></div>
   <div class="step">STEP 4 / 5</div><h2>${t.mpiTitle}</h2><div class="desc">${t.mpiDesc}</div>
   <div class="obody"><div class="drcard"><span class="em">🩺</span><span><b>${t.ivCard}</b><span>MPI v0.1 — ${VER==='m'?'74':'66'}${LANG==='kr'?'문항':'問'}</span></span></div></div>
-  <div class="ofoot"><button class="goldbtn" onclick="startTest()">${t.mpiStart}</button></div>`;
+  <div class="ofoot">${gs?`<button class="ghostbtn" style="border-color:var(--gold);color:var(--gold);margin-bottom:10px;" onclick="useGuestResult()">${t.guestUse}</button>`:''}<button class="goldbtn" onclick="startTest()">${t.mpiStart}</button></div>`;
+}
+async function useGuestResult(){
+  let gs=null;try{gs=JSON.parse(localStorage.getItem('musubi_guest'));}catch(e){}
+  if(!gs||gs.VER!==VER||!gs.RESULT)return;
+  RESULT=gs.RESULT;
+  if(LIVE){
+    const soc=RESULT.scores.find(s=>s.gate===0);
+    await sb.from('profiles').update({mpi:RESULT,social:soc?soc.mean:null}).eq('id',ME.id);
+  }
+  try{localStorage.removeItem('musubi_guest');}catch(e){}
+  resultScreen();
 }
 
 /* ---------------- MPI 검사/채점 ---------------- */
@@ -848,7 +891,9 @@ async function score(){
   });
   const verdict="pass"; // 파일럿 정책: 검사 완료 시 전원 통과 (타당도 지표는 연구용으로 기록만)
   RESULT={scores,verdict,sdHi,infHi,incN:incFlags.filter(x=>x).length,date:new Date().toISOString().slice(0,10)};
-  if(LIVE){
+  if(GUEST){
+    try{localStorage.setItem('musubi_guest',JSON.stringify({VER,RESULT}));}catch(e){}
+  }else if(LIVE){
     const soc=scores.find(s=>s.gate===0);
     await sb.from('profiles').update({mpi:RESULT,social:soc.mean}).eq('id',ME.id);
   }
@@ -860,14 +905,16 @@ function resultScreen(){
   const vmap={pass:["v-pass",...t.vPass],hold:["v-hold",...t.vHold],fail:["v-fail",...t.vFail],safefail:["v-fail",...t.vSafe],invalid:["v-hold",...t.vInv]};
   const[cls,ti,de]=vmap[r.verdict];
   const ok=r.verdict==="pass"||r.verdict==="hold";
-  $('ob').innerHTML=`<div class="prog"><div class="bar" style="width:88%"></div></div>
-  <div class="step">STEP 5 / 5</div><h2>${t.resTitle}</h2>
+  $('ob').innerHTML=`${GUEST?`<div class="step">FREE TEST</div>`:`<div class="prog"><div class="bar" style="width:88%"></div></div>
+  <div class="step">STEP 5 / 5</div>`}<h2>${t.resTitle}</h2>
   <div class="obody">
   <div class="verdict ${cls}">${ti}<small>${de}</small></div>
   ${typeCard(r)}
   ${r.scores.map(s=>scoreBar(s,t)).join('')}
   <div class="vflag">${t.vlab(r.sdHi,r.infHi,r.incN)}</div></div>
-  <div class="ofoot">${ok?`<button class="goldbtn" onclick="doneStep()">${t.next}</button>`
+  <div class="ofoot"><button class="ghostbtn" style="border-color:var(--gold);color:var(--gold);margin-bottom:10px;" onclick="shareCard()">${t.shareBtn}</button>
+    ${GUEST?`<button class="goldbtn" onclick="GUEST=false;${LIVE?"authScreen('signup')":"pickVer()"}">${t.guestJoin}</button>`
+    :ok?`<button class="goldbtn" onclick="doneStep()">${t.next}</button>`
     :r.verdict==="invalid"?`<button class="goldbtn" onclick="startTest()">${t.retry}</button>`
     :`<button class="goldbtn" onclick="logout()">${t.restart}</button>`}</div>`;
 }
@@ -929,6 +976,49 @@ function typeCard(r){
     <div class="chips" style="justify-content:center;">${sorted.slice(0,3).map(s=>`<span class="chip score">${SN(s.c)} ${Math.round(s.mean*20)}</span>`).join('')}</div>
     <div class="tm">${t1.m[LANG]}<br><span style="color:#6b5f4f">${LANG==='kr'?'서브 유형':'サブタイプ'}: ${t2.e} ${t2.n[LANG]} (${t2.c})</span></div>
   </div>`;
+}
+/* ---------------- 유형 카드 이미지 저장·공유 (인스타 스토리 규격 1080×1920) ---------------- */
+function rrect(x,px,py,w,h,r){x.beginPath();x.moveTo(px+r,py);x.arcTo(px+w,py,px+w,py+h,r);x.arcTo(px+w,py+h,px,py+h,r);x.arcTo(px,py+h,px,py,r);x.arcTo(px,py,px+w,py,r);x.closePath();}
+function fitFont(x,text,maxW,base,weight){let s=base;x.font=(weight?weight+' ':'')+s+'px sans-serif';while(x.measureText(text).width>maxW&&s>18){s-=2;x.font=(weight?weight+' ':'')+s+'px sans-serif';}}
+async function shareCard(){
+  const r=RESULT;if(!r||!r.scores)return;
+  const t=T();
+  const sorted=[...r.scores].sort((a,b)=>b.mean-a.mean);
+  const t1=TYPES[VER][sorted[0].c],t2=TYPES[VER][sorted[1].c];
+  if(!t1)return;
+  const W=1080,H=1920,c=document.createElement('canvas');c.width=W;c.height=H;
+  const x=c.getContext('2d');
+  const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,'#0d0b09');g.addColorStop(1,'#241708');
+  x.fillStyle=g;x.fillRect(0,0,W,H);
+  x.strokeStyle='#c9a45c';x.lineWidth=5;rrect(x,45,45,W-90,H-90,44);x.stroke();
+  x.textAlign='center';
+  x.fillStyle='#e6cf9a';x.font='800 62px sans-serif';x.fillText('MUSUBI 結び',W/2,175);
+  x.fillStyle='#9c8f7d';x.font='27px sans-serif';x.fillText('MUSUBI LOVE TYPE',W/2,240);
+  x.fillStyle='#c9a45c';rrect(x,W/2-140,280,280,84,22);x.fill();
+  x.fillStyle='#171008';x.font='800 50px sans-serif';x.fillText(t1.c+'-'+t2.c,W/2,338);
+  x.font='190px sans-serif';x.fillText(t1.e,W/2,610);
+  x.fillStyle='#e6cf9a';fitFont(x,t1.n[LANG],W-160,66,'800');x.fillText(t1.n[LANG],W/2,725);
+  x.textAlign='left';
+  let y=840;
+  t1.b[LANG].forEach(line=>{
+    x.fillStyle=line.startsWith('△')?'#d99790':'#cbbfa9';
+    fitFont(x,line,W-220,34,'');x.fillText(line,110,y);y+=64;
+  });
+  y+=24;
+  x.fillStyle='#2a231c';rrect(x,110,y,W-220,130,26);x.fill();
+  x.fillStyle='#e6cf9a';x.textAlign='center';
+  const q='“'+t1.q[LANG]+'”';fitFont(x,q,W-300,38,'');x.fillText(q,W/2,y+82);
+  y+=210;
+  x.fillStyle='#a9d4bc';fitFont(x,t1.m[LANG],W-180,30,'');x.fillText(t1.m[LANG],W/2,y);
+  x.fillStyle='#9c8f7d';x.font='29px sans-serif';x.fillText(t.shareCTA,W/2,H-170);
+  x.fillStyle='#c9a45c';x.font='700 33px sans-serif';x.fillText('datingapp-musubi.pages.dev',W/2,H-112);
+  const blob=await new Promise(res=>c.toBlob(res,'image/png'));
+  if(!blob)return;
+  const file=new File([blob],'musubi_type.png',{type:'image/png'});
+  if(navigator.canShare&&navigator.canShare({files:[file]})){
+    try{await navigator.share({files:[file]});return;}catch(e){if(e&&e.name==='AbortError')return;}
+  }
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='musubi_type.png';document.body.appendChild(a);a.click();a.remove();
 }
 /* ---------------- 조합(주×서브) 카드 생성 ---------------- */
 const SUBMOD={
@@ -1046,6 +1136,7 @@ async function enterApp(){
         <button class="evbtn" onclick="this.textContent='${t.evJoin[1]}';this.classList.add('joined')">${t.evJoin[0]}</button></div></div>`).join('');
   $('minput').placeholder=t.ph;
   renderMy();
+  await loadBlocks();
   await loadCards();await loadLikes();await loadChats();
   if(LIVE)subscribeRT();
   showScreen('scr-discover');setTab('scr-discover');
@@ -1062,7 +1153,7 @@ async function loadCards(){
     const likedSet=new Set((liked||[]).map(x=>x.liked));
     const {data:profs}=await sb.from('profiles').select('*')
       .eq('gender',VER==='m'?'f':'m').neq('id',ME.id).not('mpi','is',null).limit(30);
-    CARDS=(profs||[]).filter(p=>!likedSet.has(p.id)&&['pass','hold'].includes(p.mpi?.verdict))
+    CARDS=(profs||[]).filter(p=>!likedSet.has(p.id)&&!BLOCKED.has(p.id)&&['pass','hold'].includes(p.mpi?.verdict))
       .map(p=>({real:true,id:p.id,n:esc(p.nickname),a:p.age||'',l:esc([p.region,p.bio].filter(Boolean).join(' · ')),ph:p.photo_url,v:p.video_url||null,c:chipsFromMpi(p.mpi),ty:typeOf(p.mpi,VER==='m'?'f':'m')}));
   }
   if(CARDS.length===0)CARDS=T().demoProfiles[VER==='m'?'f':'m'].map(p=>({real:false,...p}));
@@ -1079,7 +1170,7 @@ function renderCards(){
     d.innerHTML=`<div class="photo" ${p.ph?`style="background-image:url('${p.ph}')"`:''}></div><div class="grad"></div>
       <div class="vbadge">${t.vbadge}</div>${p.ty?`<div class="tbadge">${p.ty.e} ${p.ty.s}</div>`:p.real?'':`<div class="dbadge">${t.demoBadge}</div>`}
       ${p.v?`<div class="vplay" onclick="playVideo('${p.v}')">▶</div>`:''}
-      <div class="pinfo"><h2>${p.n}<span class="age">${p.a}</span></h2><div class="loc">📍 ${p.l}</div>
+      <div class="pinfo"><h2>${p.n}<span class="age">${p.a}</span></h2><div class="loc">📍 ${p.l}${p.real?` <span class="rep" onclick="event.stopPropagation();reportMenu('${p.id}')">⚑</span>`:''}</div>
       <div class="chips">${(p.c||[]).map(x=>`<span class="chip ${x[1]?'score':''}">${x[0]}</span>`).join('')}</div></div>`;
     wrap.appendChild(d);
   }
@@ -1105,7 +1196,7 @@ async function loadLikes(){
   const t=T();
   if(!LIVE){$('l-head').innerHTML=t.likesHead(0);$('l-grid').innerHTML=`<div class="gempty">${t.noLikes}</div>`;return;}
   const {data:rows}=await sb.from('likes').select('liker').eq('liked',ME.id);
-  const ids=(rows||[]).map(x=>x.liker);
+  const ids=(rows||[]).map(x=>x.liker).filter(id=>!BLOCKED.has(id));
   $('l-head').innerHTML=t.likesHead(ids.length);
   if(ids.length===0){$('l-grid').innerHTML=`<div class="gempty">${t.noLikes}</div>`;return;}
   const {data:profs}=await sb.from('profiles').select('*').in('id',ids);
@@ -1119,7 +1210,12 @@ async function getMatches(){
   const {data:a}=await sb.from('likes').select('liked').eq('liker',ME.id);
   const {data:b}=await sb.from('likes').select('liker').eq('liked',ME.id);
   const mine=new Set((a||[]).map(x=>x.liked));
-  return (b||[]).map(x=>x.liker).filter(id=>mine.has(id));
+  return (b||[]).map(x=>x.liker).filter(id=>mine.has(id)&&!BLOCKED.has(id));
+}
+async function loadBlocks(){
+  if(!LIVE||!ME){BLOCKED=new Set();return;}
+  const {data}=await sb.from('blocks').select('blocked').eq('blocker',ME.id);
+  BLOCKED=new Set((data||[]).map(x=>x.blocked));
 }
 async function loadChats(){
   const t=T();
@@ -1186,6 +1282,7 @@ function renderMy(){
       <div class="tier">${t.myTier(vt)}</div>
       <div style="font-size:11px;color:var(--muted);margin-top:5px;cursor:pointer;" onclick="$('myfile').click()">${t.changePhoto}</div></div></div>
     ${r?typeCard(r):''}
+    ${r?`<button class="ghostbtn" style="border-color:var(--gold);color:var(--gold);margin:2px 0 10px;" onclick="shareCard()">${t.shareBtn}</button>`:''}
     ${r?`<div class="vcard"><div class="vt">${t.myCard[0]} <span style="float:right">✦</span></div><div class="vs">${t.myCard[1]} (${r.date})</div>
       ${r.scores.map(s=>scoreBar(s,t)).join('')}</div>`:''}
     ${t.rows.map(x=>`<div class="vrow"><span class="lab">${x[0]}</span><span class="pill p-ok">${x[1]}</span></div>`).join('')}
@@ -1256,6 +1353,31 @@ async function changeVideo(inp){
     if(error){alert(error.message);renderMy();}
     else{MYPROF.video_url=url;renderMy();}
   }catch(e){console.warn(e);alert(t.videoConvFail);renderMy();}
+}
+/* ---------------- 신고·차단 ---------------- */
+function reportMenu(uid){
+  const t=T();
+  $('rep-h').textContent='⚑ '+t.reportTitle;
+  $('repbody').innerHTML=`
+    ${t.reportReasons.map((r,k)=>`<button class="repbtn" onclick="submitReport('${uid}',${k})">${r}</button>`).join('')}
+    <button class="repbtn danger" onclick="blockUser('${uid}')">${t.blockBtn}</button>
+    <button class="repbtn" style="border:none;background:none;color:#8d7f6d;" onclick="$('repov').classList.remove('show')">${t.cancel}</button>`;
+  $('repov').classList.add('show');
+}
+async function submitReport(uid,k){
+  const t=T();
+  if(LIVE&&ME){try{await sb.from('reports').insert({reporter:ME.id,reported:uid,reason:t.reportReasons[k]});}catch(e){}}
+  $('repov').classList.remove('show');
+  alert(t.reportDone);
+}
+async function blockUser(uid){
+  const t=T();
+  if(LIVE&&ME){try{await sb.from('blocks').insert({blocker:ME.id,blocked:uid});}catch(e){}}
+  BLOCKED.add(uid);
+  $('repov').classList.remove('show');
+  alert(t.blockDone);
+  if(ROOM===uid){ROOM=null;showScreen('scr-chats');setTab('scr-chats');}
+  await loadCards();await loadLikes();await loadChats();
 }
 function hideMatch(){$('matchov').classList.remove('show');}
 function toMsg(){hideMatch();showScreen('scr-chats');setTab('scr-chats');}
