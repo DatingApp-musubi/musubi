@@ -401,7 +401,8 @@ kr:{
  profTitle:"프로필을 만들어 주세요",profDesc:"사진과 닉네임은 상대 회원에게 공개됩니다.",
  nick:"닉네임",ageL:"나이",regionL:"지역 (예: 서울)",bioL:"한 줄 소개",photoReq:"사진을 선택해 주세요",
  videoBtn:"🎬 10초 소개 영상 올리기 (선택)",videoSet:"🎬 영상 준비 완료 ✓",videoLong:"영상은 10초 이하만 가능합니다.",videoBig:"영상 파일이 너무 큽니다 (40MB 이하).",
- videoCodec:"이 영상 형식(HEVC·고효율)은 브라우저에서 재생되지 않아요. 아이폰: 설정→카메라→형식→'높은 호환성'으로 바꾼 뒤 다시 촬영해 주세요.",videoRow:"소개 영상",videoNone:"없음",videoPlay:"▶ 재생",videoChange:"🎬 영상 올리기/변경",
+ videoCodec:"이 영상 형식(HEVC·고효율)은 브라우저에서 재생되지 않아요. 아이폰: 설정→카메라→형식→'높은 호환성'으로 바꾼 뒤 다시 촬영해 주세요.",
+ videoConv:"🎬 영상 변환 중 ",videoConvFail:"영상 변환에 실패했습니다. 다른 영상으로 시도해 주세요.",videoRow:"소개 영상",videoNone:"없음",videoPlay:"▶ 재생",videoChange:"🎬 영상 올리기/변경",
  docTitle:"신분을 확인합니다",docDesc:"서류는 확인 후 즉시 파기됩니다. (탭하여 업로드 — 데모)",
  docs:[{ic:"🪪",n:"신분증",s:"본인 확인용"},{ic:"💍",n:"혼인관계증명서",s:"독신 여부 확인 (3개월 이내 발급)"}],
  up:["업로드","업로드 완료 ✓"],next:"다음",saving:"저장 중…",
@@ -485,7 +486,8 @@ jp:{
  profTitle:"プロフィールを作成してください",profDesc:"写真とニックネームは相手会員に公開されます。",
  nick:"ニックネーム",ageL:"年齢",regionL:"地域（例: 東京）",bioL:"ひとこと紹介",photoReq:"写真を選択してください",
  videoBtn:"🎬 10秒自己紹介動画（任意）",videoSet:"🎬 動画準備完了 ✓",videoLong:"動画は10秒以内にしてください。",videoBig:"動画ファイルが大きすぎます（40MB以下）。",
- videoCodec:"この動画形式（HEVC・高効率）はブラウザで再生できません。iPhone: 設定→カメラ→フォーマット→「互換性優先」に変更して撮り直してください。",videoRow:"自己紹介動画",videoNone:"なし",videoPlay:"▶ 再生",videoChange:"🎬 動画をアップ/変更",
+ videoCodec:"この動画形式（HEVC・高効率）はブラウザで再生できません。iPhone: 設定→カメラ→フォーマット→「互換性優先」に変更して撮り直してください。",
+ videoConv:"🎬 動画変換中 ",videoConvFail:"動画の変換に失敗しました。別の動画でお試しください。",videoRow:"自己紹介動画",videoNone:"なし",videoPlay:"▶ 再生",videoChange:"🎬 動画をアップ/変更",
  docTitle:"本人確認を行います",docDesc:"書類は確認後、直ちに破棄されます。（タップしてアップロード — デモ）",
  docs:[{ic:"🪪",n:"身分証",s:"本人確認用"},{ic:"💍",n:"独身証明書",s:"3ヶ月以内発行"}],
  up:["アップロード","完了 ✓"],next:"次へ",saving:"保存中…",
@@ -697,22 +699,56 @@ function pickPhoto(inp){
   };img.src=e.target.result;};
   rd.readAsDataURL(f);
 }
+/* ---------------- 브라우저 내 자동 트랜스코딩 (H.264 720p) ---------------- */
+async function getFF(){
+  if(window.__ff)return window.__ff;
+  const [{FFmpeg},util]=await Promise.all([
+    import('https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/+esm'),
+    import('https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/+esm')
+  ]);
+  window.__ffutil=util;
+  const ff=new FFmpeg();
+  const base='https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm';
+  await ff.load({
+    coreURL:await util.toBlobURL(base+'/ffmpeg-core.js','text/javascript'),
+    wasmURL:await util.toBlobURL(base+'/ffmpeg-core.wasm','application/wasm'),
+    classWorkerURL:await util.toBlobURL('https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/esm/worker.js','text/javascript')
+  });
+  window.__ff=ff;
+  return ff;
+}
+async function transcodeVideo(file,onProgress){
+  const ff=await getFF();
+  const util=window.__ffutil;
+  const cb=({progress})=>{if(onProgress)onProgress(Math.max(1,Math.min(99,Math.round(progress*100))));};
+  ff.on('progress',cb);
+  try{
+    await ff.writeFile('in',await util.fetchFile(file));
+    await ff.exec(['-i','in','-t','10','-vf','scale=-2:720','-r','30','-c:v','libx264','-preset','veryfast','-crf','26','-pix_fmt','yuv420p','-c:a','aac','-b:a','96k','-movflags','+faststart','out.mp4']);
+    const data=await ff.readFile('out.mp4');
+    try{await ff.deleteFile('in');await ff.deleteFile('out.mp4');}catch(e){}
+    if(!data||data.length<1000)throw new Error('empty output');
+    return new Blob([data.buffer],{type:'video/mp4'});
+  }finally{ff.off&&ff.off('progress',cb);}
+}
 function pickVideo(inp){
   const f=inp.files[0];if(!f)return;
-  const t=T(),err=$('p-err');
-  if(f.size>40*1024*1024){if(err)err.textContent=t.videoBig;return;}
-  const u=URL.createObjectURL(f),v=document.createElement('video');
-  v.preload='metadata';
-  v.onloadedmetadata=()=>{
-    const b=$('vbtn');
-    setTimeout(()=>{ // videoWidth 확정까지 잠시 대기
-      URL.revokeObjectURL(u);
-      if(v.duration>11){videoBlob=null;if(err)err.textContent=t.videoLong;if(b){b.textContent=t.videoBtn;b.classList.remove('has');}}
-      else if(!v.videoWidth){videoBlob=null;if(err)err.textContent=t.videoCodec;if(b){b.textContent=t.videoBtn;b.classList.remove('has');}}
-      else{videoBlob=f;if(err)err.textContent='';if(b){b.textContent=t.videoSet;b.classList.add('has');}}
-    },300);
-  };
-  v.src=u;
+  const t=T(),err=$('p-err'),b=$('vbtn');
+  if(f.size>60*1024*1024){if(err)err.textContent=t.videoBig;return;}
+  (async()=>{
+    try{
+      if(b){b.textContent=t.videoConv+'0%';b.classList.remove('has');}
+      if(err)err.textContent='';
+      const out=await transcodeVideo(f,p=>{if(b)b.textContent=t.videoConv+p+'%';});
+      videoBlob=out;
+      if(b){b.textContent=t.videoSet+' ('+(out.size/1048576).toFixed(1)+'MB)';b.classList.add('has');}
+    }catch(e){
+      console.warn('transcode:',e);
+      videoBlob=null;
+      if(err)err.textContent=t.videoConvFail;
+      if(b){b.textContent=t.videoBtn;b.classList.remove('has');}
+    }
+  })();
 }
 async function uploadVideo(){
   if(!LIVE||!videoBlob)return null;
@@ -1155,7 +1191,7 @@ function renderMy(){
     ${t.rows.map(x=>`<div class="vrow"><span class="lab">${x[0]}</span><span class="pill p-ok">${x[1]}</span></div>`).join('')}
     <div class="vrow"><span class="lab">${t.videoRow}</span><span style="font-size:12.5px;">
       ${MYPROF?.video_url?`<span style="color:var(--gold);cursor:pointer;" onclick="playVideo('${MYPROF.video_url}')">${t.videoPlay}</span> · `:`<span style="color:var(--muted)">${t.videoNone}</span> · `}
-      <span style="color:var(--gold);cursor:pointer;" onclick="$('myvfile').click()">${t.videoChange}</span></span></div>
+      <span id="vchg" style="color:var(--gold);cursor:pointer;" onclick="$('myvfile').click()">${t.videoChange}</span></span></div>
     <input type="file" id="myvfile" accept="video/mp4,video/quicktime,video/webm" style="display:none" onchange="changeVideo(this)">
     <div class="vrow link" onclick="previewMe()"><span class="lab">👁 ${t.previewRow}</span><span style="color:var(--gold);font-size:13px">›</span></div>
     <div class="vrow link" onclick="openTypes()"><span class="lab">${t.typesRow}</span><span style="color:var(--gold);font-size:13px">8+7 ›</span></div>
@@ -1209,23 +1245,17 @@ function closeVideo(){const v=$('vidplayer');v.pause();v.src='';$('vidov').class
 async function changeVideo(inp){
   const f=inp.files[0];if(!f||!LIVE)return;
   const t=T();
-  if(f.size>40*1024*1024){alert(t.videoBig);return;}
-  const u=URL.createObjectURL(f),v=document.createElement('video');
-  v.preload='metadata';
-  v.onloadedmetadata=()=>{
-    setTimeout(async()=>{
-      URL.revokeObjectURL(u);
-      if(v.duration>11){alert(t.videoLong);return;}
-      if(!v.videoWidth){alert(t.videoCodec);return;}
-      videoBlob=f;
-      try{
-        const url=await uploadVideo();
-        let {error}=await sb.from('profiles').update({video_url:url}).eq('id',ME.id);
-        if(error){alert(error.message);}else{MYPROF.video_url=url;renderMy();}
-      }catch(e){alert(e.message||e);}
-    },300);
-  };
-  v.src=u;
+  if(f.size>60*1024*1024){alert(t.videoBig);return;}
+  const st=$('vchg');
+  try{
+    const out=await transcodeVideo(f,p=>{if(st)st.textContent=t.videoConv+p+'%';});
+    videoBlob=out;
+    if(st)st.textContent='⬆…';
+    const url=await uploadVideo();
+    let {error}=await sb.from('profiles').update({video_url:url}).eq('id',ME.id);
+    if(error){alert(error.message);renderMy();}
+    else{MYPROF.video_url=url;renderMy();}
+  }catch(e){console.warn(e);alert(t.videoConvFail);renderMy();}
 }
 function hideMatch(){$('matchov').classList.remove('show');}
 function toMsg(){hideMatch();showScreen('scr-chats');setTab('scr-chats');}
