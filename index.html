@@ -878,7 +878,7 @@ async function loadCards(){
     CARDS=(profs||[]).filter(p=>!likedSet.has(p.id)&&['pass','hold'].includes(p.mpi?.verdict))
       .map(p=>({real:true,id:p.id,n:esc(p.nickname),a:p.age||'',l:esc([p.region,p.bio].filter(Boolean).join(' · ')),ph:p.photo_url,c:chipsFromMpi(p.mpi),ty:typeOf(p.mpi,VER==='m'?'f':'m')}));
   }
-  if(CARDS.length===0)CARDS=t.demoProfiles.map(p=>({real:false,...p}));
+  if(CARDS.length===0)CARDS=L[VER==='m'?'kr':'jp'].demoProfiles.map(p=>({real:false,...p}));
   renderCards();
 }
 function renderCards(){
