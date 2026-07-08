@@ -362,36 +362,155 @@ const SUPABASE_ANON_KEY = "sb_publishable_nXKa3nQWZhYGdwnksWYsrg_tcSsdIHK";
 const LIVE = !SUPABASE_URL.startsWith("YOUR");
 const sb = LIVE ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
-/* ---------------- MPI 문항 (v0.1과 동일) ---------------- */
-const SOC_KR=[["처음 보는 사람들과의 모임에서도 금방 어울린다.",0],["게임이나 액티비티에 적극적으로 참여한다.",0],["모임에서 분위기를 띄우는 역할을 자주 맡는다.",0],["여러 명이 모이는 자리는 피하고 싶다.",1],["모임에서 소외된 사람에게 먼저 말을 건다.",0],["보드게임이나 노래방처럼 함께 노는 활동을 즐긴다.",0],["모임에서는 주로 듣기만 하는 편이다.",1],["낯선 문화의 놀이도 기꺼이 배워서 참여한다.",0]];
-const SOC_JP=[["初対面の人たちの集まりでもすぐに打ち解ける。",0],["ゲームやアクティビティに積極的に参加する。",0],["集まりで場を盛り上げる役をよく任される。",0],["大人数の集まりは避けたい。",1],["集まりで輪に入れていない人に自分から話しかける。",0],["ボードゲームやカラオケなど、みんなで遊ぶ活動が好きだ。",0],["集まりでは聞き役に回ることがほとんどだ。",1],["知らない文化の遊びも喜んで覚えて参加する。",0]];
+/* ---------------- MPI 문항 (v0.2 — 완전 이중언어: [한국어, 日本語, 역채점]) ---------------- */
+const SOC=[
+["처음 보는 사람들과의 모임에서도 금방 어울린다.","初対面の人たちの集まりでもすぐに打ち解ける。",0],
+["게임이나 액티비티에 적극적으로 참여한다.","ゲームやアクティビティに積極的に参加する。",0],
+["모임에서 분위기를 띄우는 역할을 자주 맡는다.","集まりで場を盛り上げる役をよく任される。",0],
+["여러 명이 모이는 자리는 피하고 싶다.","大人数の集まりは避けたい。",1],
+["모임에서 소외된 사람에게 먼저 말을 건다.","集まりで輪に入れていない人に自分から話しかける。",0],
+["보드게임이나 노래방처럼 함께 노는 활동을 즐긴다.","ボードゲームやカラオケなど、みんなで遊ぶ活動が好きだ。",0],
+["모임에서는 주로 듣기만 하는 편이다.","集まりでは聞き役に回ることがほとんどだ。",1],
+["낯선 문화의 놀이도 기꺼이 배워서 참여한다.","知らない文化の遊びも喜んで覚えて参加する。",0]];
 const SCALES={
 m:[
- {c:"K1",n:"자상함",cut:3.4,gate:1,it:[["연인이 힘들어 보이면 해결책보다 마음 상태를 먼저 묻는다.",0],["상대의 작은 표정 변화를 잘 알아차린다.",0],["상대가 말하지 않아도 필요한 것을 먼저 챙겨준 적이 많다.",0],["다른 사람의 고민을 들어주느라 내 일정을 미룬 적이 있다.",0],["다른 사람의 감정 문제에 휘말리는 것이 귀찮게 느껴진다.",1],["아픈 사람을 보면 내 일처럼 마음이 쓰인다.",0],["상대의 입장에서 상황을 다시 생각해보는 습관이 있다.",0],["위로해야 할 때 무슨 말을 해야 할지 몰라 자리를 피하게 된다.",1]]},
- {c:"K2",n:"강인함",cut:3.4,gate:1,it:[["예상치 못한 문제가 생겨도 침착함을 유지한다.",0],["주변 사람들이 위기 상황에서 나에게 의지하는 편이다.",0],["힘든 일이 있어도 해야 할 일을 끝까지 해낸다.",0],["스트레스를 받으면 쉽게 무너지는 편이다.",1],["중요한 결정을 미루지 않고 책임지고 내린다.",0],["비판을 들으면 오랫동안 마음이 흔들린다.",1],["몸이 힘들어도 약속한 일은 지킨다.",0],["어려운 상황에서 오히려 집중력이 높아진다.",0]]},
- {c:"K3",n:"적극성",cut:3.4,gate:1,it:[["마음에 드는 사람에게 먼저 연락한다.",0],["새로운 모임에서 먼저 말을 거는 편이다.",0],["원하는 것이 있으면 주저하지 않고 시도한다.",0],["거절당할까 봐 제안을 망설이는 편이다.",1],["데이트 계획을 스스로 세워 제안한다.",0],["처음 만난 사람과의 대화를 즐긴다.",0],["관심이 있어도 상대가 먼저 다가오기를 기다린다.",1],["하고 싶은 말은 상대의 눈을 보고 직접 한다.",0]]},
- {c:"K4",n:"다정함",cut:3.4,gate:1,it:[["연인에게 하루 일과를 묻는 연락을 거르지 않는다.",0],["기념일을 먼저 기억하고 준비한다.",0],["상대가 지나가듯 말한 것을 기억했다가 챙긴다.",0],["연애 초반이 지나면 연락 빈도가 눈에 띄게 준다.",1],["함께한 추억을 사진이나 기록으로 남기는 편이다.",0],["상대의 가족이나 친구의 근황도 관심을 갖고 묻는다.",0],["아침 인사나 잘 자라는 인사를 꾸준히 한다.",0],["특별한 일이 없으면 굳이 연락할 필요를 못 느낀다.",1]]},
- {c:"K5",n:"애정 표현력",cut:3.4,gate:1,it:[["좋아하는 마음을 말로 자주 표현한다.",0],["고마움을 느끼면 그 자리에서 말한다.",0],["애정 표현을 하는 것이 쑥스러워 피하게 된다.",1],["상대의 좋은 점을 구체적으로 칭찬한다.",0],["사람들 앞에서도 연인을 존중하는 표현을 한다.",0],["마음은 있지만 표현하지 않아도 상대가 알아주길 바란다.",1],["편지나 메시지로 마음을 전하는 것을 좋아한다.",0],["다정한 몸짓이나 가벼운 스킨십이 자연스럽다.",0]]},
- {c:"K6",n:"리드력",cut:3.4,gate:1,it:[["데이트 코스를 미리 조사해 계획을 세운다.",0],["여럿이 결정을 못 내릴 때 내가 정리해서 제안한다.",0],["식당 예약이나 주문을 내가 맡는 것이 편하다.",0],["상대가 계획을 다 세워주기를 바라는 편이다.",1],["여행 일정과 동선을 주도적으로 짠다.",0],["문제가 생기면 대안을 먼저 제시한다.",0],["결정해야 할 일이 생기면 일단 미룬다.",1],["처음 가는 곳에서도 길을 찾고 상황을 정리하는 역할을 한다.",0]]},
- {c:"K7",n:"존중·비구속",cut:3.8,gate:2,it:[["연인의 친구 관계를 있는 그대로 존중한다.",0],["연인의 휴대폰을 확인하고 싶은 충동이 든다.",1],["연인이 나 없이 모임에 가도 편안하다.",0],["연인이 이성 동료와 식사하는 것은 용납하기 어렵다.",1],["연인의 취미 생활 시간을 보장해야 한다고 생각한다.",0],["연락이 두 시간 이상 안 되면 화가 난다.",1],["서로에게 사생활 공간이 필요하다고 생각한다.",0],["사랑한다면 일정을 서로 모두 공유해야 한다고 생각한다.",1]]},
- {c:"K8",n:"모임 사교성",cut:3.6,gate:0,it:SOC_KR}
+ {c:"K1",n:"자상함",cut:3.4,gate:1,it:[
+  ["연인이 힘들어 보이면 해결책보다 마음 상태를 먼저 묻는다.","恋人がつらそうなら、解決策より先に気持ちを尋ねる。",0],
+  ["상대의 작은 표정 변화를 잘 알아차린다.","相手のわずかな表情の変化によく気づく。",0],
+  ["상대가 말하지 않아도 필요한 것을 먼저 챙겨준 적이 많다.","相手が言わなくても、必要なものを先に用意してあげることが多い。",0],
+  ["다른 사람의 고민을 들어주느라 내 일정을 미룬 적이 있다.","人の悩みを聞くために自分の予定を後回しにしたことがある。",0],
+  ["다른 사람의 감정 문제에 휘말리는 것이 귀찮게 느껴진다.","他人の感情的な問題に関わるのは面倒だと感じる。",1],
+  ["아픈 사람을 보면 내 일처럼 마음이 쓰인다.","具合の悪い人を見ると、自分のことのように気にかかる。",0],
+  ["상대의 입장에서 상황을 다시 생각해보는 습관이 있다.","相手の立場で状況を考え直す習慣がある。",0],
+  ["위로해야 할 때 무슨 말을 해야 할지 몰라 자리를 피하게 된다.","慰めるべき場面で何を言えばいいか分からず、その場を避けてしまう。",1]]},
+ {c:"K2",n:"강인함",cut:3.4,gate:1,it:[
+  ["예상치 못한 문제가 생겨도 침착함을 유지한다.","予期しない問題が起きても冷静さを保つ。",0],
+  ["주변 사람들이 위기 상황에서 나에게 의지하는 편이다.","危機的な状況で周りの人に頼られる方だ。",0],
+  ["힘든 일이 있어도 해야 할 일을 끝까지 해낸다.","つらいことがあっても、やるべきことは最後までやり遂げる。",0],
+  ["스트레스를 받으면 쉽게 무너지는 편이다.","ストレスを受けると簡単に崩れてしまう方だ。",1],
+  ["중요한 결정을 미루지 않고 책임지고 내린다.","重要な決定を先送りせず、責任を持って下す。",0],
+  ["비판을 들으면 오랫동안 마음이 흔들린다.","批判を聞くと長い間心が揺れる。",1],
+  ["몸이 힘들어도 약속한 일은 지킨다.","体がつらくても約束したことは守る。",0],
+  ["어려운 상황에서 오히려 집중력이 높아진다.","困難な状況でむしろ集中力が高まる。",0]]},
+ {c:"K3",n:"적극성",cut:3.4,gate:1,it:[
+  ["마음에 드는 사람에게 먼저 연락한다.","気になる人には自分から連絡する。",0],
+  ["새로운 모임에서 먼저 말을 거는 편이다.","新しい集まりでは自分から話しかける方だ。",0],
+  ["원하는 것이 있으면 주저하지 않고 시도한다.","欲しいものがあればためらわずに挑戦する。",0],
+  ["거절당할까 봐 제안을 망설이는 편이다.","断られるのが怖くて提案をためらう方だ。",1],
+  ["데이트 계획을 스스로 세워 제안한다.","デートの計画を自分で立てて提案する。",0],
+  ["처음 만난 사람과의 대화를 즐긴다.","初対面の人との会話を楽しむ。",0],
+  ["관심이 있어도 상대가 먼저 다가오기를 기다린다.","興味があっても相手から近づいてくるのを待つ。",1],
+  ["하고 싶은 말은 상대의 눈을 보고 직접 한다.","言いたいことは相手の目を見て直接言う。",0]]},
+ {c:"K4",n:"다정함",cut:3.4,gate:1,it:[
+  ["연인에게 하루 일과를 묻는 연락을 거르지 않는다.","恋人にその日の出来事を尋ねる連絡を欠かさない。",0],
+  ["기념일을 먼저 기억하고 준비한다.","記念日を先に覚えていて準備する。",0],
+  ["상대가 지나가듯 말한 것을 기억했다가 챙긴다.","相手が何気なく言ったことを覚えていて気にかける。",0],
+  ["연애 초반이 지나면 연락 빈도가 눈에 띄게 준다.","恋愛の初期が過ぎると連絡の頻度が目に見えて減る。",1],
+  ["함께한 추억을 사진이나 기록으로 남기는 편이다.","一緒の思い出を写真や記録に残す方だ。",0],
+  ["상대의 가족이나 친구의 근황도 관심을 갖고 묻는다.","相手の家族や友人の近況にも関心を持って尋ねる。",0],
+  ["아침 인사나 잘 자라는 인사를 꾸준히 한다.","朝の挨拶やおやすみの挨拶を欠かさない。",0],
+  ["특별한 일이 없으면 굳이 연락할 필요를 못 느낀다.","特別な用がなければ連絡する必要を感じない。",1]]},
+ {c:"K5",n:"애정 표현력",cut:3.4,gate:1,it:[
+  ["좋아하는 마음을 말로 자주 표현한다.","好きな気持ちを言葉でよく表現する。",0],
+  ["고마움을 느끼면 그 자리에서 말한다.","感謝を感じたらその場で伝える。",0],
+  ["애정 표현을 하는 것이 쑥스러워 피하게 된다.","愛情表現が照れくさくて避けてしまう。",1],
+  ["상대의 좋은 점을 구체적으로 칭찬한다.","相手の良いところを具体的に褒める。",0],
+  ["사람들 앞에서도 연인을 존중하는 표현을 한다.","人前でも恋人を尊重する表現をする。",0],
+  ["마음은 있지만 표현하지 않아도 상대가 알아주길 바란다.","気持ちはあるが、表現しなくても相手に察してほしいと思う。",1],
+  ["편지나 메시지로 마음을 전하는 것을 좋아한다.","手紙やメッセージで気持ちを伝えるのが好きだ。",0],
+  ["다정한 몸짓이나 가벼운 스킨십이 자연스럽다.","優しいしぐさや軽いスキンシップが自然にできる。",0]]},
+ {c:"K6",n:"리드력",cut:3.4,gate:1,it:[
+  ["데이트 코스를 미리 조사해 계획을 세운다.","デートコースを事前に調べて計画を立てる。",0],
+  ["여럿이 결정을 못 내릴 때 내가 정리해서 제안한다.","みんなが決められないとき、自分が整理して提案する。",0],
+  ["식당 예약이나 주문을 내가 맡는 것이 편하다.","レストランの予約や注文は自分が担当する方が楽だ。",0],
+  ["상대가 계획을 다 세워주기를 바라는 편이다.","相手が計画を全部立ててくれることを望む方だ。",1],
+  ["여행 일정과 동선을 주도적으로 짠다.","旅行の日程やルートを主導的に組む。",0],
+  ["문제가 생기면 대안을 먼저 제시한다.","問題が起きたら代替案を先に示す。",0],
+  ["결정해야 할 일이 생기면 일단 미룬다.","決めるべきことができると、ひとまず先送りする。",1],
+  ["처음 가는 곳에서도 길을 찾고 상황을 정리하는 역할을 한다.","初めての場所でも道を探し、状況を整理する役割を担う。",0]]},
+ {c:"K7",n:"존중·비구속",cut:3.8,gate:2,it:[
+  ["연인의 친구 관계를 있는 그대로 존중한다.","恋人の友人関係をあるがまま尊重する。",0],
+  ["연인의 휴대폰을 확인하고 싶은 충동이 든다.","恋人のスマホを確認したい衝動に駆られる。",1],
+  ["연인이 나 없이 모임에 가도 편안하다.","恋人が自分抜きで集まりに行っても平気だ。",0],
+  ["연인이 이성 동료와 식사하는 것은 용납하기 어렵다.","恋人が異性の同僚と食事するのは許しがたい。",1],
+  ["연인의 취미 생활 시간을 보장해야 한다고 생각한다.","恋人の趣味の時間は保障すべきだと思う。",0],
+  ["연락이 두 시간 이상 안 되면 화가 난다.","連絡が2時間以上つかないと腹が立つ。",1],
+  ["서로에게 사생활 공간이 필요하다고 생각한다.","お互いにプライベートな空間が必要だと思う。",0],
+  ["사랑한다면 일정을 서로 모두 공유해야 한다고 생각한다.","愛しているなら予定はすべて共有すべきだと思う。",1]]},
+ {c:"K8",n:"모임 사교성",cut:3.6,gate:0,it:SOC}
 ],
 f:[
- {c:"J1",n:"親和性",cut:3.4,gate:1,it:[["相手の意見が自分と違っても、まず最後まで聞く。",0],["一緒にいる人が心地よいかどうかを第一に考える。",0],["自分のやり方が通らないと我慢できない。",1],["対立が起きたら、譲れる部分を先に探す。",0],["相手の提案を前向きに受け入れる方だ。",0],["些細なことで言い争いになることが多い。",1],["初対面の人でも、良い面を先に見ようとする。",0],["一緒に作業すると協力的だと言われる。",0]]},
- {c:"J2",n:"愛嬌",cut:3.4,gate:1,it:[["好きな人の前では明るく茶目っ気のある一面が出る。",0],["感謝やうれしさを表情や身振りで大きく表現する。",0],["相手を笑わせるのが楽しい。",0],["感情を表に出すのが苦手だ。",1],["親しい人には甘えた表現が自然にできる。",0],["あだ名や優しい話し方をよく使う。",0],["無愛想だと言われることが多い。",1],["相手が疲れて見えたら、気分をほぐそうと努める。",0]]},
- {c:"J3",n:"デート費用の公平性",cut:3.4,gate:1,it:[["デート費用はお互いの状況に合わせて分担するのが自然だ。",0],["相手が支払ってくれたら、次は自分が出そうとする。",0],["デート費用は男性が払うのが当然だと思う。",1],["プレゼントをもらったら、同じ気持ちでお返しをしようとする。",0],["相手の経済的な負担を思いやる方だ。",0],["記念日のプレゼントの値段が愛情の大きさだと思う。",1],["一緒に使うお金の計画を相談するのは苦にならない。",0],["相手に割り勘を提案されると寂しく感じる。",1]]},
- {c:"J4",n:"傾聴・リアクション",cut:3.4,gate:1,it:[["相づちが上手だと言われる。",0],["話を聞くときは相手の目を見て集中する。",0],["相手が言ったことを覚えていて、後でまた尋ねる。",0],["会話中にスマホをよく確認する。",1],["面白い話には大きく笑って反応する。",0],["相手の話が長くなると、遮って自分の話を始める。",1],["質問を投げかけて、相手がもっと話せるようにする。",0],["会話中に相手の気分の変化に気づく。",0]]},
- {c:"J5",n:"穏やかな対処",cut:3.4,gate:1,it:[["腹が立っても、声を荒げる前に一度立ち止まる。",0],["不満は相手を責めない言葉で伝える。",0],["けんかをすると何日も口をきかない方だ。",1],["対立の後、自分から仲直りの言葉をかけられる。",0],["感情が高ぶったら、時間を置いて話し直そうと提案する。",0],["腹が立つと過去のことまで持ち出して責める。",1],["相手の謝罪を受け入れたら、同じことを蒸し返さない。",0],["けんかの際に席を立って出て行ったことがある。",1]]},
- {c:"J6",n:"自立性",cut:3.4,gate:1,it:[["問題が起きたら、まず自分で解決方法を探す。",0],["自分の生活費や支出を自分で管理している。",0],["一人で過ごす時間をうまく活用している。",0],["決断するとき、誰かに代わりに決めてほしいと思う。",1],["新しい技術や知識を自分で学ぶのが好きだ。",0],["困ったことが起きると、すぐに人を頼る。",1],["恋人が忙しいときも、自分の日常を楽しく保てる。",0],["知らない場所でも必要なことを一人で処理できる。",0]]},
- {c:"J7",n:"ソーシャル指数",cut:3.6,gate:0,it:SOC_JP}
+ {c:"J1",n:"親和性",cut:3.4,gate:1,it:[
+  ["상대의 의견이 나와 달라도 먼저 끝까지 듣는다.","相手の意見が自分と違っても、まず最後まで聞く。",0],
+  ["함께 있는 사람이 편안한지를 가장 먼저 생각한다.","一緒にいる人が心地よいかどうかを第一に考える。",0],
+  ["내 방식대로 되지 않으면 참기 어렵다.","自分のやり方が通らないと我慢できない。",1],
+  ["갈등이 생기면 양보할 수 있는 부분을 먼저 찾는다.","対立が起きたら、譲れる部分を先に探す。",0],
+  ["상대의 제안을 긍정적으로 받아들이는 편이다.","相手の提案を前向きに受け入れる方だ。",0],
+  ["사소한 일로 말다툼이 되는 경우가 많다.","些細なことで言い争いになることが多い。",1],
+  ["처음 만난 사람이라도 좋은 면을 먼저 보려고 한다.","初対面の人でも、良い面を先に見ようとする。",0],
+  ["함께 일하면 협조적이라는 말을 듣는다.","一緒に作業すると協力的だと言われる。",0]]},
+ {c:"J2",n:"愛嬌",cut:3.4,gate:1,it:[
+  ["좋아하는 사람 앞에서는 밝고 장난스러운 모습이 나온다.","好きな人の前では明るく茶目っ気のある一面が出る。",0],
+  ["고마움이나 기쁨을 표정과 몸짓으로 크게 표현한다.","感謝やうれしさを表情や身振りで大きく表現する。",0],
+  ["상대를 웃게 하는 것이 즐겁다.","相手を笑わせるのが楽しい。",0],
+  ["감정을 겉으로 드러내는 것이 서툴다.","感情を表に出すのが苦手だ。",1],
+  ["친한 사람에게는 애교 섞인 표현이 자연스럽게 나온다.","親しい人には甘えた表現が自然にできる。",0],
+  ["애칭이나 다정한 말투를 자주 쓴다.","あだ名や優しい話し方をよく使う。",0],
+  ["무뚝뚝하다는 말을 자주 듣는다.","無愛想だと言われることが多い。",1],
+  ["상대가 지쳐 보이면 기분을 풀어주려고 노력한다.","相手が疲れて見えたら、気分をほぐそうと努める。",0]]},
+ {c:"J3",n:"デート費用の公平性",cut:3.4,gate:1,it:[
+  ["데이트 비용은 서로의 상황에 맞게 나누는 것이 자연스럽다.","デート費用はお互いの状況に合わせて分担するのが自然だ。",0],
+  ["상대가 계산해 주면 다음에는 내가 내려고 한다.","相手が支払ってくれたら、次は自分が出そうとする。",0],
+  ["데이트 비용은 상대방이 내는 것이 당연하다고 생각한다.","デート費用は相手が払うのが当然だと思う。",1],
+  ["선물을 받으면 같은 마음으로 보답하려고 한다.","プレゼントをもらったら、同じ気持ちでお返しをしようとする。",0],
+  ["상대의 경제적 부담을 헤아리는 편이다.","相手の経済的な負担を思いやる方だ。",0],
+  ["기념일 선물의 가격이 애정의 크기라고 생각한다.","記念日のプレゼントの値段が愛情の大きさだと思う。",1],
+  ["함께 쓰는 돈의 계획을 상의하는 것이 부담스럽지 않다.","一緒に使うお金の計画を相談するのは苦にならない。",0],
+  ["상대가 비용을 나누자고 제안하면 서운하게 느껴진다.","相手に割り勘を提案されると寂しく感じる。",1]]},
+ {c:"J4",n:"傾聴・リアクション",cut:3.4,gate:1,it:[
+  ["맞장구를 잘 친다는 말을 듣는다.","相づちが上手だと言われる。",0],
+  ["이야기를 들을 때 상대의 눈을 보며 집중한다.","話を聞くときは相手の目を見て集中する。",0],
+  ["상대가 한 말을 기억했다가 나중에 다시 물어본다.","相手が言ったことを覚えていて、後でまた尋ねる。",0],
+  ["대화 중에 휴대폰을 자주 확인한다.","会話中にスマホをよく確認する。",1],
+  ["재미있는 이야기에는 크게 웃으며 반응한다.","面白い話には大きく笑って反応する。",0],
+  ["상대의 말이 길어지면 끊고 내 이야기를 시작한다.","相手の話が長くなると、遮って自分の話を始める。",1],
+  ["질문을 던져 상대가 더 이야기할 수 있게 한다.","質問を投げかけて、相手がもっと話せるようにする。",0],
+  ["대화 중 상대의 기분 변화를 알아차린다.","会話中に相手の気分の変化に気づく。",0]]},
+ {c:"J5",n:"穏やかな対処",cut:3.4,gate:1,it:[
+  ["화가 나도 언성을 높이기 전에 한 번 멈춘다.","腹が立っても、声を荒げる前に一度立ち止まる。",0],
+  ["불만은 상대를 탓하지 않는 말로 전한다.","不満は相手を責めない言葉で伝える。",0],
+  ["다투면 며칠씩 말을 하지 않는 편이다.","けんかをすると何日も口をきかない方だ。",1],
+  ["갈등 후 먼저 화해의 말을 건넬 수 있다.","対立の後、自分から仲直りの言葉をかけられる。",0],
+  ["감정이 격해지면 시간을 두고 다시 이야기하자고 제안한다.","感情が高ぶったら、時間を置いて話し直そうと提案する。",0],
+  ["화가 나면 지난 일까지 꺼내어 탓한다.","腹が立つと過去のことまで持ち出して責める。",1],
+  ["상대의 사과를 받아들이면 같은 일을 다시 꺼내지 않는다.","相手の謝罪を受け入れたら、同じことを蒸し返さない。",0],
+  ["다투다가 자리를 박차고 나가버린 적이 있다.","けんかの際に席を立って出て行ったことがある。",1]]},
+ {c:"J6",n:"自立性",cut:3.4,gate:1,it:[
+  ["문제가 생기면 먼저 스스로 해결 방법을 찾는다.","問題が起きたら、まず自分で解決方法を探す。",0],
+  ["내 생활비와 지출을 스스로 관리한다.","自分の生活費や支出を自分で管理している。",0],
+  ["혼자 보내는 시간을 잘 활용한다.","一人で過ごす時間をうまく活用している。",0],
+  ["결정할 때 누군가 대신 정해주면 좋겠다고 생각한다.","決断するとき、誰かに代わりに決めてほしいと思う。",1],
+  ["새로운 기술이나 지식을 스스로 배우는 것을 좋아한다.","新しい技術や知識を自分で学ぶのが好きだ。",0],
+  ["곤란한 일이 생기면 곧바로 남에게 의지한다.","困ったことが起きると、すぐに人を頼る。",1],
+  ["연인이 바쁠 때도 내 일상을 즐겁게 유지할 수 있다.","恋人が忙しいときも、自分の日常を楽しく保てる。",0],
+  ["낯선 곳에서도 필요한 일을 혼자 처리할 수 있다.","知らない場所でも必要なことを一人で処理できる。",0]]},
+ {c:"J7",n:"ソーシャル指数",cut:3.6,gate:0,it:SOC}
 ]};
 const SD={kr:["나는 지금까지 거짓말을 한 번도 한 적이 없다.","나는 어떤 상황에서도 화를 낸 적이 없다.","나는 모든 사람에게 항상 친절하다.","나는 약속에 늦은 적이 단 한 번도 없다.","나는 다른 사람을 부러워해 본 적이 없다.","나는 하기 싫은 일을 미뤄 본 적이 없다."],
 jp:["私はこれまで一度も嘘をついたことがない。","私はどんな状況でも腹を立てたことがない。","私は誰に対してもいつも親切だ。","私は約束に遅れたことが一度もない。","私は人をうらやましいと思ったことがない。","私はやりたくないことを後回しにしたことがない。"]};
 const INF={kr:["나는 지난 한 달 동안 잠을 전혀 자지 않았다.","나는 내가 사는 나라의 수도가 어디인지 모른다."],
 jp:["私はこの一か月、まったく眠っていない。","私は自分の住んでいる国の首都を知らない。"]};
 const INC={
- m:[{q:"마음에 드는 사람이 있어도 먼저 연락하지 않는 편이다.",ref:["K3",0],dir:-1},{q:"연인과 연락이 잠시 안 되어도 크게 신경 쓰지 않는다.",ref:["K7",5],dir:1}],
- f:[{q:"デート費用を分担しようという提案は不快だ。",ref:["J3",0],dir:-1},{q:"相手の話への反応が上手だと言われる。",ref:["J4",0],dir:1}]};
+ m:[{q:{kr:"마음에 드는 사람이 있어도 먼저 연락하지 않는 편이다.",jp:"気になる人がいても自分からは連絡しない方だ。"},ref:["K3",0],dir:-1},
+    {q:{kr:"연인과 연락이 잠시 안 되어도 크게 신경 쓰지 않는다.",jp:"恋人としばらく連絡が取れなくても、あまり気にしない。"},ref:["K7",5],dir:1}],
+ f:[{q:{kr:"데이트 비용을 나누자는 제안은 불쾌하다.",jp:"デート費用を分担しようという提案は不快だ。"},ref:["J3",0],dir:-1},
+    {q:{kr:"상대의 말에 반응을 잘한다는 이야기를 듣는다.",jp:"相手の話への反応が上手だと言われる。"},ref:["J4",0],dir:1}]};
+/* ---------------- 궁합 유형 매핑 ---------------- */
+const COMPAT={
+ K1:["J4","J5","J2"],K2:["J6","J1","J5"],K3:["J2","J7","J4"],K4:["J1","J4","J5"],
+ K5:["J2","J4","J7"],K6:["J1","J3","J2"],K7:["J6","J3","J1"],K8:["J7","J2","J1"],
+ J1:["K6","K2","K4"],J2:["K5","K3","K8"],J3:["K7","K6","K1"],J4:["K1","K5","K3"],
+ J5:["K1","K2","K4"],J6:["K7","K2","K6"],J7:["K8","K3","K5"]};
 
 /* ---------------- 문구 ---------------- */
 const L={
@@ -402,6 +521,8 @@ kr:{
  brandSub:"무스비 · 인연을 맺다",googleBtn:"Google로 계속하기",kakaoBtn:"💬 카카오로 계속하기",orMail:"또는 이메일로",
  errCred:"이메일과 6자 이상 비밀번호를 입력해 주세요.",oauthErr:" 로그인 설정이 아직 완료되지 않았습니다.",
  pickM:"남성 회원",pickMd:"MPI-M 8개 척도 · 74문항 · 유료 멤버십",pickF:"여성 회원",pickFd:"MPI-F 7개 척도 · 66문항(일본어 검사) · 전 기능 무료",
+ pickKM:"한국 남성",pickJF:"일본 여성",pickJM:"일본 남성",pickKF:"한국 여성",pickMatch:"매칭 상대",
+ compatTitle:"💞 나와 잘 맞는 유형",recTitle:"✨ 이 유형의 추천 상대",recGuest:"가입하면 이 유형의 실제 회원 5명을 추천해 드려요.",recEmpty:"잘 맞는 유형의 회원이 아직 없어요. 새 회원이 들어오면 추천 탭에서 가장 먼저 보여드릴게요.",
  demoWarn:"⚠ 데모 모드로 동작 중입니다",
  authSignupBtn:"가입하고 심사 시작",authLoginBtn:"로그인",
  toLogin:"이미 회원이신가요? 로그인",toSignup:"처음이신가요? 회원가입",
@@ -482,7 +603,15 @@ kr:{
    {n:"카나 (데모)",a:34,l:"센다이 · 물리치료사",ph:"https://images.unsplash.com/photo-1693305991125-1b87c60e5578?auto=format&fit=crop&w=750&q=75",c:[["자립성 92",1],["온화한 대처 84",1],["등산 좋아함",0]]}],
   m:[
    {n:"준호 (데모)",a:36,l:"서울 · 회사 경영",ph:"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=750&q=75",c:[["자상함 88",1],["리드력 83",1],["일본어 중급",0]]},
-   {n:"태양 (데모)",a:38,l:"부산 · 자영업",ph:"https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=750&q=75",c:[["강인함 90",1],["모임 사교성 89",1],["요리가 취미",0]]}]}
+   {n:"태양 (데모)",a:38,l:"부산 · 자영업",ph:"https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=750&q=75",c:[["강인함 90",1],["모임 사교성 89",1],["요리가 취미",0]]}],
+  fkr:[
+   {n:"지수 (데모)",a:27,l:"서울 · 간호사",ph:"https://images.unsplash.com/photo-1584948500423-4a9c7b63c7ee?auto=format&fit=crop&w=750&q=75",c:[["친화성 91",1],["경청·리액션 88",1],["일본어 중급",0]]},
+   {n:"수연 (데모)",a:30,l:"부산 · 마케터",ph:"https://images.unsplash.com/photo-1633531008092-055a03a8ea0e?auto=format&fit=crop&w=750&q=75",c:[["자립성 90",1],["온화한 대처 86",1],["여행 좋아함",0]]},
+   {n:"하은 (데모)",a:25,l:"인천 · 대학원생",ph:"https://images.unsplash.com/photo-1732209988983-f88c9b543212?auto=format&fit=crop&w=750&q=75",c:[["애교 89",1],["모임 사교성 87",1],["일본 드라마 팬",0]]}],
+  mjp:[
+   {n:"하루토 (데모)",a:33,l:"도쿄 · 엔지니어",ph:"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=750&q=75",c:[["다정함 89",1],["존중·비구속 87",1],["한국어 중급",0]]},
+   {n:"렌 (데모)",a:29,l:"오사카 · 셰프",ph:"https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=750&q=75",c:[["자상함 90",1],["애정 표현력 85",1],["요리가 특기",0]]},
+   {n:"소타 (데모)",a:35,l:"나고야 · 회사원",c:[["강인함 88",1],["리드력 84",1],["한국 여행 자주",0]]}]}
 },
 jp:{
  likert:["全く違う","違う方だ","どちらとも言えない","そう思う方だ","とてもそう思う"],
@@ -491,6 +620,8 @@ jp:{
  brandSub:"結び・むすび",googleBtn:"Googleで続ける",kakaoBtn:"💬 カカオで続ける",orMail:"またはメールで",
  errCred:"メールアドレスと6文字以上のパスワードを入力してください。",oauthErr:" ログイン設定がまだ完了していません。",
  pickM:"男性会員",pickMd:"MPI-M 8尺度・74問（韓国語検査）・有料メンバーシップ",pickF:"女性会員",pickFd:"MPI-F 7尺度・66問・全機能無料",
+ pickKM:"韓国人男性",pickJF:"日本人女性",pickJM:"日本人男性",pickKF:"韓国人女性",pickMatch:"マッチ相手",
+ compatTitle:"💞 相性のいいタイプ",recTitle:"✨ このタイプのおすすめのお相手",recGuest:"登録すると、このタイプの実際の会員を5名おすすめします。",recEmpty:"相性のいいタイプの会員はまだいません。新しい会員が来たら、おすすめタブで最初に表示します。",
  demoWarn:"⚠ デモモードで動作中です",
  authSignupBtn:"登録して審査へ",authLoginBtn:"ログイン",
  toLogin:"会員の方はこちら — ログイン",toSignup:"はじめての方 — 新規登録",
@@ -569,14 +700,22 @@ jp:{
    {n:"カナ（デモ）",a:34,l:"仙台・理学療法士",ph:"https://images.unsplash.com/photo-1693305991125-1b87c60e5578?auto=format&fit=crop&w=750&q=75",c:[["自立性 92",1],["穏やかな対処 84",1],["登山が好き",0]]}],
   m:[
    {n:"ジュノ（デモ）",a:36,l:"ソウル・会社経営",ph:"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=750&q=75",c:[["思いやり 88",1],["リード力 83",1],["日本語 中級",0]]},
-   {n:"テヤン（デモ）",a:38,l:"釜山・自営業",ph:"https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=750&q=75",c:[["頼もしさ 90",1],["ソーシャル 89",1],["料理が趣味",0]]}]}
+   {n:"テヤン（デモ）",a:38,l:"釜山・自営業",ph:"https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=750&q=75",c:[["頼もしさ 90",1],["ソーシャル 89",1],["料理が趣味",0]]}],
+  fkr:[
+   {n:"ジス（デモ）",a:27,l:"ソウル・看護師",ph:"https://images.unsplash.com/photo-1584948500423-4a9c7b63c7ee?auto=format&fit=crop&w=750&q=75",c:[["親和性 91",1],["傾聴・リアクション 88",1],["日本語 中級",0]]},
+   {n:"スヨン（デモ）",a:30,l:"釜山・マーケター",ph:"https://images.unsplash.com/photo-1633531008092-055a03a8ea0e?auto=format&fit=crop&w=750&q=75",c:[["自立性 90",1],["穏やかな対処 86",1],["旅行好き",0]]},
+   {n:"ハウン（デモ）",a:25,l:"仁川・大学院生",ph:"https://images.unsplash.com/photo-1732209988983-f88c9b543212?auto=format&fit=crop&w=750&q=75",c:[["愛嬌 89",1],["ソーシャル指数 87",1],["日本ドラマ好き",0]]}],
+  mjp:[
+   {n:"ハルト（デモ）",a:33,l:"東京・エンジニア",ph:"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=750&q=75",c:[["優しさ 89",1],["束縛しない 87",1],["韓国語 中級",0]]},
+   {n:"レン（デモ）",a:29,l:"大阪・シェフ",ph:"https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=750&q=75",c:[["思いやり 90",1],["愛情表現 85",1],["料理が得意",0]]},
+   {n:"ソウタ（デモ）",a:35,l:"名古屋・会社員",c:[["頼もしさ 88",1],["リード力 84",1],["韓国旅行が好き",0]]}]}
 }};
 
 /* ---------------- 전역 상태 ---------------- */
 let ME=null, MYPROF=null, VER=null, LANG='kr';
 let SEQ=[], ANS=[], pos=0, upDocs=new Set(), slotSel=-1, RESULT=null;
 let CARDS=[], idx=0, ROOM=null, photoBlob=null, videoBlob=null, rtChannel=null;
-let GUEST=false, BLOCKED=new Set();
+let GUEST=false, BLOCKED=new Set(), NAT='kr';
 const $=id=>document.getElementById(id);
 const T=()=>L[LANG];
 /* ---------------- 언어 전환 ---------------- */
@@ -609,7 +748,7 @@ async function routeUser(){
   const {data:p}=await sb.from('profiles').select('*').eq('id',ME.id).maybeSingle();
   MYPROF=p;
   if(!p){pickVer();return;}
-  VER=p.gender;if(!LANGSET)LANG=VER==='m'?'kr':'jp';
+  VER=p.gender;NAT=p.nat||(p.gender==='m'?'kr':'jp');if(!LANGSET)LANG=NAT;
   if(!p.mpi){mpiIntro();return;}
   RESULT=p.mpi;
   if(RESULT.verdict==='pass'||RESULT.verdict==='hold'){enterApp();}
@@ -683,11 +822,13 @@ function pickVer(){
   const t=T();
   $('ob').innerHTML=`<div class="step">STEP 1 / 5</div><h2>${t.pickTitle}</h2>
   <div class="obody" style="padding-top:12px;">
-    <button class="verbtn" onclick="setVer('m')"><span class="ic">🤵</span><span><b>${t.pickM}</b><span>${t.pickMd}</span></span></button>
-    <button class="verbtn" onclick="setVer('f')"><span class="ic">👰</span><span><b>${t.pickF}</b><span>${t.pickFd}</span></span></button>
+    <button class="verbtn" onclick="setGN('m','kr')"><span class="ic">🤵</span><span><b>🇰🇷 ${t.pickKM}</b><span>MPI-M · 74 · ${t.pickMatch}: 🇯🇵${t.pickJF}</span></span></button>
+    <button class="verbtn" onclick="setGN('f','jp')"><span class="ic">👰</span><span><b>🇯🇵 ${t.pickJF}</b><span>MPI-F · 66 · ${t.pickMatch}: 🇰🇷${t.pickKM}</span></span></button>
+    <button class="verbtn" onclick="setGN('m','jp')"><span class="ic">🤵</span><span><b>🇯🇵 ${t.pickJM}</b><span>MPI-M · 74 · ${t.pickMatch}: 🇰🇷${t.pickKF}</span></span></button>
+    <button class="verbtn" onclick="setGN('f','kr')"><span class="ic">👰</span><span><b>🇰🇷 ${t.pickKF}</b><span>MPI-F · 66 · ${t.pickMatch}: 🇯🇵${t.pickJM}</span></span></button>
   </div>`;
 }
-function setVer(v){VER=v;if(!LANGSET)LANG=v==='m'?'kr':'jp';updateLangSw();photoBlob=null;videoBlob=null;profileStep();}
+function setGN(g,n){VER=g;NAT=n;if(!LANGSET){LANG=n;updateLangSw();}photoBlob=null;videoBlob=null;profileStep();}
 /* ---------------- 게스트(비회원) 무료 검사 ---------------- */
 function guestStart(){GUEST=true;guestPick();}
 function guestPick(){
@@ -695,13 +836,15 @@ function guestPick(){
   const t=T();
   $('ob').innerHTML=`<div class="step">FREE TEST</div><h2>${t.pickTitle}</h2>
   <div class="obody" style="padding-top:12px;">
-    <button class="verbtn" onclick="guestSetVer('m')"><span class="ic">🤵</span><span><b>${t.pickM}</b><span>MPI-M · 74</span></span></button>
-    <button class="verbtn" onclick="guestSetVer('f')"><span class="ic">👰</span><span><b>${t.pickF}</b><span>MPI-F · 66</span></span></button>
+    <button class="verbtn" onclick="guestSetGN('m','kr')"><span class="ic">🤵</span><span><b>🇰🇷 ${t.pickKM}</b><span>MPI-M · 74</span></span></button>
+    <button class="verbtn" onclick="guestSetGN('f','jp')"><span class="ic">👰</span><span><b>🇯🇵 ${t.pickJF}</b><span>MPI-F · 66</span></span></button>
+    <button class="verbtn" onclick="guestSetGN('m','jp')"><span class="ic">🤵</span><span><b>🇯🇵 ${t.pickJM}</b><span>MPI-M · 74</span></span></button>
+    <button class="verbtn" onclick="guestSetGN('f','kr')"><span class="ic">👰</span><span><b>🇰🇷 ${t.pickKF}</b><span>MPI-F · 66</span></span></button>
     <div style="font-size:11.5px;color:var(--muted);line-height:1.6;padding:4px;">${t.guestNote}</div>
   </div>
   <div class="ofoot"><button class="backlink" onclick="GUEST=false;splash(${LIVE?'false':'true'})">‹</button></div>`;
 }
-function guestSetVer(v){VER=v;if(!LANGSET){LANG=v==='m'?'kr':'jp';updateLangSw();}startTest();}
+function guestSetGN(g,n){VER=g;NAT=n;if(!LANGSET){LANG=n;updateLangSw();}startTest();}
 function profileStep(){
   ONBFN=profileStep;
   const t=T();
@@ -808,8 +951,9 @@ async function saveProfile(){
     let video_url=MYPROF?.video_url||null;
     if(LIVE&&videoBlob){try{video_url=await uploadVideo();}catch(e){console.warn('video upload:',e.message);}}
     if(LIVE){
-      let payload={id:ME.id,gender:VER,nickname:nick,age,region,bio,photo_url,lang:LANG,video_url};
+      let payload={id:ME.id,gender:VER,nat:NAT,nickname:nick,age,region,bio,photo_url,lang:LANG,video_url};
       let {error}=await sb.from('profiles').upsert(payload);
+      if(error&&/nat/.test(error.message||'')){delete payload.nat;({error}=await sb.from('profiles').upsert(payload));}
       if(error&&/video_url/.test(error.message||'')){delete payload.video_url;({error}=await sb.from('profiles').upsert(payload));}
       if(error)throw error;
       MYPROF=payload;
@@ -831,7 +975,7 @@ function docStep(){
 function mpiIntro(){
   ONBFN=mpiIntro;
   const t=T();
-  let gs=null;try{const g=JSON.parse(localStorage.getItem('musubi_guest'));if(g&&g.VER===VER&&g.RESULT)gs=g;}catch(e){}
+  let gs=null;try{const g=JSON.parse(localStorage.getItem('musubi_guest'));if(g&&g.VER===VER&&(!g.NAT||g.NAT===NAT)&&g.RESULT)gs=g;}catch(e){}
   $('ob').innerHTML=`<div class="prog"><div class="bar" style="width:45%"></div></div>
   <div class="step">STEP 4 / 5</div><h2>${t.mpiTitle}</h2><div class="desc">${t.mpiDesc}</div>
   <div class="obody"><div class="drcard"><span class="em">🩺</span><span><b>${t.ivCard}</b><span>MPI v0.1 — ${VER==='m'?'74':'66'}${LANG==='kr'?'문항':'問'}</span></span></div></div>
@@ -839,7 +983,7 @@ function mpiIntro(){
 }
 async function useGuestResult(){
   let gs=null;try{gs=JSON.parse(localStorage.getItem('musubi_guest'));}catch(e){}
-  if(!gs||gs.VER!==VER||!gs.RESULT)return;
+  if(!gs||gs.VER!==VER||(gs.NAT&&gs.NAT!==NAT)||!gs.RESULT)return;
   RESULT=gs.RESULT;
   if(LIVE){
     const soc=RESULT.scores.find(s=>s.gate===0);
@@ -851,13 +995,14 @@ async function useGuestResult(){
 
 /* ---------------- MPI 검사/채점 ---------------- */
 function buildSeq(v){
-  const sc=SCALES[v],lang=v==='m'?'kr':'jp',seq=[];
+  // 문항 언어 = 응시자의 모국어(국적 기준). 성별 척도와 무관하게 한국인은 한국어, 일본인은 일본어로 응시.
+  const sc=SCALES[v],lang=(NAT==='jp')?'jp':'kr',ti=lang==='kr'?0:1,seq=[];
   for(let r=0;r<8;r++)for(let s=0;s<sc.length;s++)
-    seq.push({t:sc[s].it[r][0],rev:sc[s].it[r][1],scale:sc[s].c,idx:r,kind:"c"});
+    seq.push({t:sc[s].it[r][ti],rev:sc[s].it[r][2],scale:sc[s].c,idx:r,kind:"c"});
   SD[lang].forEach((t,k)=>seq.splice(9+k*10,0,{t,kind:"sd",idx:k}));
   seq.splice(24,0,{t:INF[lang][0],kind:"inf",idx:0});
   seq.splice(48,0,{t:INF[lang][1],kind:"inf",idx:1});
-  INC[v].forEach((o,k)=>seq.push({t:o.q,kind:"inc",idx:k}));
+  INC[v].forEach((o,k)=>seq.push({t:o.q[lang],kind:"inc",idx:k}));
   return seq;
 }
 function startTest(){SEQ=buildSeq(VER);ANS=new Array(SEQ.length).fill(0);pos=0;renderQ();}
@@ -888,14 +1033,14 @@ async function score(){
     const vIdx=SEQ.findIndex(q=>q.kind==="inc"&&q.idx===k);
     const refItem=SCALES[VER].find(s=>s.c===o.ref[0]).it[o.ref[1]];
     const refIdx=SEQ.findIndex(q=>q.kind==="c"&&q.scale===o.ref[0]&&q.idx===o.ref[1]);
-    const refKeyed=refItem[1]?6-ANS[refIdx]:ANS[refIdx];
+    const refKeyed=refItem[2]?6-ANS[refIdx]:ANS[refIdx];
     const vKeyed=o.dir===-1?6-ANS[vIdx]:ANS[vIdx];
     return Math.abs(vKeyed-refKeyed)>=3;
   });
   const verdict="pass"; // 파일럿 정책: 검사 완료 시 전원 통과 (타당도 지표는 연구용으로 기록만)
   RESULT={scores,verdict,sdHi,infHi,incN:incFlags.filter(x=>x).length,date:new Date().toISOString().slice(0,10)};
   if(GUEST){
-    try{localStorage.setItem('musubi_guest',JSON.stringify({VER,RESULT}));}catch(e){}
+    try{localStorage.setItem('musubi_guest',JSON.stringify({VER,NAT,RESULT}));}catch(e){}
   }else if(LIVE){
     const soc=scores.find(s=>s.gate===0);
     await sb.from('profiles').update({mpi:RESULT,social:soc.mean}).eq('id',ME.id);
@@ -913,6 +1058,7 @@ function resultScreen(){
   <div class="obody">
   <div class="verdict ${cls}">${ti}<small>${de}</small></div>
   ${typeCard(r)}
+  ${compatSection(r,'res')}
   ${r.scores.map(s=>scoreBar(s,t)).join('')}
   <div class="vflag">${t.vlab(r.sdHi,r.infHi,r.incN)}</div></div>
   <div class="ofoot"><button class="ghostbtn" style="border-color:var(--gold);color:var(--gold);margin-bottom:10px;" onclick="shareCard()">${t.shareBtn}</button>
@@ -920,6 +1066,47 @@ function resultScreen(){
     :ok?`<button class="goldbtn" onclick="doneStep()">${t.next}</button>`
     :r.verdict==="invalid"?`<button class="goldbtn" onclick="startTest()">${t.retry}</button>`
     :`<button class="goldbtn" onclick="logout()">${t.restart}</button>`}</div>`;
+  loadRecs('res');
+}
+/* ---------------- 궁합 유형 + 추천 상대 ---------------- */
+function compatSection(r,sfx){
+  if(!r||!r.scores)return'';
+  const t=T();
+  const my=topCode(r);
+  const og=VER==='m'?'f':'m';
+  const list=COMPAT[my]||[];
+  if(!list.length)return'';
+  return `<div class="cmblabel" style="margin-top:16px;">${t.compatTitle}</div>
+  <div style="display:flex;gap:8px;margin-bottom:4px;">${list.map(c=>{const ty=TYPES[og][c];return `
+    <div style="flex:1;background:var(--surface2);border:1px solid #3a3128;border-radius:14px;padding:12px 6px;text-align:center;">
+      <div style="font-size:26px;">${ty.e}</div>
+      <div style="font-size:11.5px;color:var(--gold-light);font-weight:700;margin-top:4px;">${TSHORT[og][c][LANG==='kr'?0:1]}</div>
+      <div style="font-size:9.5px;color:var(--muted);letter-spacing:1px;">${ty.c}</div>
+    </div>`;}).join('')}</div>
+  <div id="recwrap-${sfx}"></div>`;
+}
+async function loadRecs(sfx){
+  const t=T(),wrap=$('recwrap-'+sfx);
+  if(!wrap)return;
+  const r=RESULT;if(!r||!r.scores)return;
+  if(GUEST||!LIVE||!ME){wrap.innerHTML=`<div style="font-size:12px;color:var(--muted);padding:8px 2px;line-height:1.6;">${t.recGuest}</div>`;return;}
+  const my=topCode(r);
+  const comp=new Set(COMPAT[my]||[]);
+  const og=VER==='m'?'f':'m', on=NAT==='kr'?'jp':'kr';
+  const {data:profs}=await sb.from('profiles').select('*').eq('gender',og).neq('id',ME.id).not('mpi','is',null).limit(60);
+  const top=(profs||[])
+    .filter(p=>natOf(p)===on&&!BLOCKED.has(p.id)&&comp.has(topCode(p.mpi)))
+    .map(p=>({p,ty:typeOf(p.mpi,og)}))
+    .filter(x=>x.ty)
+    .slice(0,5);
+  if(top.length===0){wrap.innerHTML=`<div style="font-size:12px;color:var(--muted);padding:8px 2px;line-height:1.6;">${t.recEmpty}</div>`;return;}
+  wrap.innerHTML=`<div class="cmblabel" style="margin-top:12px;">${t.recTitle}</div>
+  <div style="display:flex;gap:9px;overflow-x:auto;padding-bottom:6px;">${top.map(x=>`
+    <div style="min-width:94px;max-width:94px;text-align:center;">
+      <div style="width:94px;height:118px;border-radius:14px;border:1px solid #3a3128;background:#221c15;background-size:cover;background-position:center;${x.p.photo_url?`background-image:url('${x.p.photo_url}');`:''}"></div>
+      <div style="font-size:11px;margin-top:5px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(x.p.nickname)} · ${x.p.age||''}</div>
+      <div style="font-size:9.5px;color:var(--gold);">${x.ty.e} ${x.ty.s}</div>
+    </div>`).join('')}</div>`;
 }
 function scoreBar(s,t){
   const pill=s.gate===0&&s.mean>=s.cut?`<span class="pill p-ok">${t.evOk}</span>`:'';
@@ -1149,17 +1336,29 @@ function chipsFromMpi(mpi){
   return [...mpi.scores].filter(s=>s.gate!==2).sort((a,b)=>b.mean-a.mean).slice(0,3)
     .map(s=>[`${SN(s.c)} ${Math.round(s.mean*20)}`,1]);
 }
+function natOf(p){return p.nat||(p.gender==='m'?'kr':'jp');}
+function topCode(mpi){return mpi&&mpi.scores?[...mpi.scores].sort((a,b)=>b.mean-a.mean)[0].c:null;}
 async function loadCards(){
   const t=T();CARDS=[];idx=0;
+  const og=VER==='m'?'f':'m', on=NAT==='kr'?'jp':'kr';
   if(LIVE){
     const {data:liked}=await sb.from('likes').select('liked').eq('liker',ME.id);
     const likedSet=new Set((liked||[]).map(x=>x.liked));
     const {data:profs}=await sb.from('profiles').select('*')
-      .eq('gender',VER==='m'?'f':'m').neq('id',ME.id).not('mpi','is',null).limit(30);
-    CARDS=(profs||[]).filter(p=>!likedSet.has(p.id)&&!BLOCKED.has(p.id)&&['pass','hold'].includes(p.mpi?.verdict))
-      .map(p=>({real:true,id:p.id,n:esc(p.nickname),a:p.age||'',l:esc([p.region,p.bio].filter(Boolean).join(' · ')),ph:p.photo_url,v:p.video_url||null,c:chipsFromMpi(p.mpi),ty:typeOf(p.mpi,VER==='m'?'f':'m')}));
+      .eq('gender',og).neq('id',ME.id).not('mpi','is',null).limit(60);
+    CARDS=(profs||[]).filter(p=>!likedSet.has(p.id)&&!BLOCKED.has(p.id)&&natOf(p)===on&&['pass','hold'].includes(p.mpi?.verdict))
+      .map(p=>({real:true,id:p.id,n:esc(p.nickname),a:p.age||'',l:esc([p.region,p.bio].filter(Boolean).join(' · ')),ph:p.photo_url,v:p.video_url||null,c:chipsFromMpi(p.mpi),ty:typeOf(p.mpi,og),top:topCode(p.mpi)}));
+    // 궁합 유형 우선 정렬 (안정 정렬: 궁합 유형이 앞으로)
+    if(RESULT&&RESULT.scores){
+      const comp=new Set(COMPAT[topCode(RESULT)]||[]);
+      CARDS.sort((a,b)=>((b.top&&comp.has(b.top))?1:0)-((a.top&&comp.has(a.top))?1:0));
+    }
   }
-  if(CARDS.length===0)CARDS=T().demoProfiles[VER==='m'?'f':'m'].map(p=>({real:false,...p}));
+  if(CARDS.length===0){
+    const dp=T().demoProfiles;
+    const key=og==='f'?(on==='jp'?'f':'fkr'):(on==='kr'?'m':'mjp');
+    CARDS=(dp[key]||dp[og]||[]).map(p=>({real:false,...p}));
+  }
   renderCards();
 }
 function renderCards(){
@@ -1286,6 +1485,7 @@ function renderMy(){
       <div style="font-size:11px;color:var(--muted);margin-top:5px;cursor:pointer;" onclick="$('myfile').click()">${t.changePhoto}</div></div></div>
     ${r?typeCard(r):''}
     ${r?`<button class="ghostbtn" style="border-color:var(--gold);color:var(--gold);margin:2px 0 10px;" onclick="shareCard()">${t.shareBtn}</button>`:''}
+    ${r?compatSection(r,'my'):''}
     ${r?`<div class="vcard"><div class="vt">${t.myCard[0]} <span style="float:right">✦</span></div><div class="vs">${t.myCard[1]} (${r.date})</div>
       ${r.scores.map(s=>scoreBar(s,t)).join('')}</div>`:''}
     ${t.rows.map(x=>`<div class="vrow"><span class="lab">${x[0]}</span><span class="pill p-ok">${x[1]}</span></div>`).join('')}
@@ -1299,6 +1499,7 @@ function renderMy(){
     <div class="vrow link" onclick="window.open('privacy.html','_blank')"><span class="lab">${t.privacyLink}</span><span style="color:var(--gold);font-size:13px">›</span></div>
     <div class="vrow link" onclick="window.open('terms.html','_blank')"><span class="lab">${t.termsLink}</span><span style="color:var(--gold);font-size:13px">›</span></div>
     <button class="ghostbtn" onclick="logout()" style="color:#8d7f6d;">${t.logout}</button>`;
+  loadRecs('my');
 }
 async function changePhoto(inp){
   const f=inp.files[0];if(!f||!LIVE)return;
@@ -1319,7 +1520,7 @@ async function changePhoto(inp){
 }
 function previewMe(){
   const t=T();
-  const viewerLang=VER==='m'?'jp':'kr'; // 반대 성별 회원의 기본 언어
+  const viewerLang=NAT==='kr'?'jp':'kr'; // 상대국 회원의 기본 언어
   const vt=L[viewerLang];
   let ty=null;
   if(RESULT&&RESULT.scores){
