@@ -18,6 +18,11 @@
   .screen{position:absolute;inset:0;padding:max(16px,env(safe-area-inset-top)) 0 86px;display:none;flex-direction:column;overflow:hidden;}
   .screen.active{display:flex;}
   .full{padding-bottom:0!important;}
+  .langsw{position:absolute;top:max(12px,env(safe-area-inset-top));right:12px;z-index:95;display:flex;background:rgba(23,19,16,.92);border:1px solid #3a3128;border-radius:20px;padding:3px;backdrop-filter:blur(6px);}
+  .langsw button{border:none;background:none;color:var(--muted);font-size:11px;padding:5px 11px;border-radius:16px;cursor:pointer;font-weight:700;}
+  .langsw button.on{background:linear-gradient(135deg,#c9a45c,#a07c33);color:#171008;}
+  .apptitle{padding-right:150px!important;}
+  .chathead{padding-right:150px!important;}
   .onb{position:absolute;inset:0;background:var(--bg);z-index:70;display:none;flex-direction:column;
     padding:max(28px,env(safe-area-inset-top)) 24px 28px;overflow-y:auto;}
   .onb.active{display:flex;}
@@ -228,6 +233,10 @@
 </head>
 <body>
 <div class="shell">
+  <div class="langsw" id="langsw">
+    <button id="lb-kr" onclick="setLang('kr')">한국어</button>
+    <button id="lb-jp" onclick="setLang('jp')">日本語</button>
+  </div>
   <div class="onb active" id="onb"><div id="ob" style="display:flex;flex-direction:column;flex:1;min-height:0;"></div></div>
 
   <div class="screen" id="scr-discover">
@@ -484,6 +493,18 @@ let SEQ=[], ANS=[], pos=0, upDocs=new Set(), slotSel=-1, RESULT=null;
 let CARDS=[], idx=0, ROOM=null, photoBlob=null, rtChannel=null;
 const $=id=>document.getElementById(id);
 const T=()=>L[LANG];
+/* ---------------- 언어 전환 ---------------- */
+let LANGSET=false,ONBFN=null;
+try{const sl=localStorage.getItem('musubi_lang');if(sl==='kr'||sl==='jp'){LANG=sl;LANGSET=true;}}catch(e){}
+function updateLangSw(){$('lb-kr').classList.toggle('on',LANG==='kr');$('lb-jp').classList.toggle('on',LANG==='jp');}
+function setLang(l){
+  if(LANG===l)return;
+  LANG=l;LANGSET=true;
+  try{localStorage.setItem('musubi_lang',l);}catch(e){}
+  updateLangSw();
+  if(document.getElementById('onb').classList.contains('active')){if(ONBFN)ONBFN();}
+  else{enterApp();}
+}
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 /* ---------------- 부팅 ---------------- */
@@ -502,7 +523,7 @@ async function routeUser(){
   const {data:p}=await sb.from('profiles').select('*').eq('id',ME.id).maybeSingle();
   MYPROF=p;
   if(!p){pickVer();return;}
-  VER=p.gender;LANG=VER==='m'?'kr':'jp';
+  VER=p.gender;if(!LANGSET)LANG=VER==='m'?'kr':'jp';
   if(!p.mpi){mpiIntro();return;}
   RESULT=p.mpi;
   if(RESULT.verdict==='pass'||RESULT.verdict==='hold'){enterApp();}
@@ -511,6 +532,7 @@ async function routeUser(){
 
 /* ---------------- 스플래시 / 인증 ---------------- */
 function splash(demoMode){
+  ONBFN=()=>splash(demoMode);
   $('ob').innerHTML=`<div class="splash">
     <div class="mark">🎀</div><div class="bn">MU<em>SUBI</em></div><div class="bs">結び · 무스비</div>
     <div class="tg">${L.kr.tag}</div>
@@ -521,6 +543,7 @@ function splash(demoMode){
     </div>`;
 }
 function authScreen(mode){
+  ONBFN=()=>authScreen(mode);
   const t=L.kr;
   $('ob').innerHTML=`<div class="step">MUSUBI</div>
   <h2>${mode==='signup'?t.signup:t.login} <span style="font-size:13px;color:var(--muted)">/ ${mode==='signup'?L.jp.signup:L.jp.login}</span></h2>
@@ -567,14 +590,16 @@ async function doAuth(mode){
 
 /* ---------------- 온보딩 ---------------- */
 function pickVer(){
+  ONBFN=pickVer;
   $('ob').innerHTML=`<div class="step">STEP 1 / 6</div><h2>${L.kr.pickTitle}<br><span style="font-size:14px;color:var(--muted)">${L.jp.pickTitle}</span></h2>
   <div class="obody" style="padding-top:12px;">
     <button class="verbtn" onclick="setVer('m')"><span class="ic">🤵</span><span><b>남성 회원 (한국어)</b><span>MPI-M 8개 척도 · 74문항 · 유료 멤버십</span></span></button>
     <button class="verbtn" onclick="setVer('f')"><span class="ic">👰</span><span><b>女性会員（日本語）</b><span>MPI-F 7尺度 · 66問 · 全機能無料</span></span></button>
   </div>`;
 }
-function setVer(v){VER=v;LANG=v==='m'?'kr':'jp';photoBlob=null;profileStep();}
+function setVer(v){VER=v;if(!LANGSET)LANG=v==='m'?'kr':'jp';updateLangSw();photoBlob=null;profileStep();}
 function profileStep(){
+  ONBFN=profileStep;
   const t=T();
   $('ob').innerHTML=`<div class="prog"><div class="bar" style="width:18%"></div></div>
   <div class="step">STEP 2 / 6</div><h2>${t.profTitle}</h2><div class="desc">${t.profDesc}</div>
@@ -625,6 +650,7 @@ async function saveProfile(){
   }catch(e){err.textContent=e.message;$('p-next').disabled=false;$('p-next').textContent=t.next;}
 }
 function docStep(){
+  ONBFN=docStep;
   const t=T();
   $('ob').innerHTML=`<div class="prog"><div class="bar" style="width:33%"></div></div>
   <div class="step">STEP 3 / 6</div><h2>${t.docTitle}</h2><div class="desc">${t.docDesc}</div>
@@ -635,6 +661,7 @@ function docStep(){
   <div class="ofoot"><button class="goldbtn" onclick="mpiIntro()" ${upDocs.size<2?'disabled':''}>${t.next}</button></div>`;
 }
 function mpiIntro(){
+  ONBFN=mpiIntro;
   const t=T();
   $('ob').innerHTML=`<div class="prog"><div class="bar" style="width:45%"></div></div>
   <div class="step">STEP 4 / 6</div><h2>${t.mpiTitle}</h2><div class="desc">${t.mpiDesc}</div>
@@ -655,6 +682,7 @@ function buildSeq(v){
 }
 function startTest(){SEQ=buildSeq(VER);ANS=new Array(SEQ.length).fill(0);pos=0;renderQ();}
 function renderQ(){
+  ONBFN=renderQ;
   const t=T(),q=SEQ[pos],pct=Math.round(pos/SEQ.length*100);
   const msg=t.lpMsg[Math.min(3,Math.floor(pct/25))];
   $('ob').innerHTML=`
@@ -693,6 +721,7 @@ async function score(){
   resultScreen();
 }
 function resultScreen(){
+  ONBFN=resultScreen;
   const t=T(),r=RESULT;
   const vmap={pass:["v-pass",...t.vPass],hold:["v-hold",...t.vHold],fail:["v-fail",...t.vFail],safefail:["v-fail",...t.vSafe],invalid:["v-hold",...t.vInv]};
   const[cls,ti,de]=vmap[r.verdict];
@@ -788,6 +817,7 @@ function renderTypes(){
 }
 function ivStep(){slotSel=-1;renderIv();}
 function renderIv(){
+  ONBFN=renderIv;
   const t=T();
   $('ob').innerHTML=`<div class="prog"><div class="bar" style="width:94%"></div></div>
   <div class="step">STEP 6 / 6</div><h2>${t.ivTitle}</h2><div class="desc">${t.ivDesc}</div>
@@ -798,6 +828,7 @@ function renderIv(){
   <div class="ofoot"><button class="goldbtn" onclick="doneStep()" ${slotSel<0?'disabled':''}>${t.ivBook}</button></div>`;
 }
 function doneStep(){
+  ONBFN=doneStep;
   const t=T();
   $('ob').innerHTML=`<div class="prog"><div class="bar" style="width:100%"></div></div>
   <div class="obody" style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
@@ -997,6 +1028,7 @@ function go(el){setTab(el.dataset.s);showScreen(el.dataset.s);}
 function setTab(s){document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.s===s));}
 function showScreen(s){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));$(s).classList.add('active');}
 
+updateLangSw();
 boot();
 </script>
 </body>
