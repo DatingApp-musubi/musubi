@@ -400,7 +400,8 @@ kr:{
  pickTitle:"가입 유형을 선택해 주세요",
  profTitle:"프로필을 만들어 주세요",profDesc:"사진과 닉네임은 상대 회원에게 공개됩니다.",
  nick:"닉네임",ageL:"나이",regionL:"지역 (예: 서울)",bioL:"한 줄 소개",photoReq:"사진을 선택해 주세요",
- videoBtn:"🎬 10초 소개 영상 올리기 (선택)",videoSet:"🎬 영상 준비 완료 ✓",videoLong:"영상은 10초 이하만 가능합니다.",videoBig:"영상 파일이 너무 큽니다 (40MB 이하).",videoRow:"소개 영상",videoNone:"없음",videoPlay:"▶ 재생",videoChange:"🎬 영상 올리기/변경",
+ videoBtn:"🎬 10초 소개 영상 올리기 (선택)",videoSet:"🎬 영상 준비 완료 ✓",videoLong:"영상은 10초 이하만 가능합니다.",videoBig:"영상 파일이 너무 큽니다 (40MB 이하).",
+ videoCodec:"이 영상 형식(HEVC·고효율)은 브라우저에서 재생되지 않아요. 아이폰: 설정→카메라→형식→'높은 호환성'으로 바꾼 뒤 다시 촬영해 주세요.",videoRow:"소개 영상",videoNone:"없음",videoPlay:"▶ 재생",videoChange:"🎬 영상 올리기/변경",
  docTitle:"신분을 확인합니다",docDesc:"서류는 확인 후 즉시 파기됩니다. (탭하여 업로드 — 데모)",
  docs:[{ic:"🪪",n:"신분증",s:"본인 확인용"},{ic:"💍",n:"혼인관계증명서",s:"독신 여부 확인 (3개월 이내 발급)"}],
  up:["업로드","업로드 완료 ✓"],next:"다음",saving:"저장 중…",
@@ -483,7 +484,8 @@ jp:{
  pickTitle:"会員タイプを選択してください",
  profTitle:"プロフィールを作成してください",profDesc:"写真とニックネームは相手会員に公開されます。",
  nick:"ニックネーム",ageL:"年齢",regionL:"地域（例: 東京）",bioL:"ひとこと紹介",photoReq:"写真を選択してください",
- videoBtn:"🎬 10秒自己紹介動画（任意）",videoSet:"🎬 動画準備完了 ✓",videoLong:"動画は10秒以内にしてください。",videoBig:"動画ファイルが大きすぎます（40MB以下）。",videoRow:"自己紹介動画",videoNone:"なし",videoPlay:"▶ 再生",videoChange:"🎬 動画をアップ/変更",
+ videoBtn:"🎬 10秒自己紹介動画（任意）",videoSet:"🎬 動画準備完了 ✓",videoLong:"動画は10秒以内にしてください。",videoBig:"動画ファイルが大きすぎます（40MB以下）。",
+ videoCodec:"この動画形式（HEVC・高効率）はブラウザで再生できません。iPhone: 設定→カメラ→フォーマット→「互換性優先」に変更して撮り直してください。",videoRow:"自己紹介動画",videoNone:"なし",videoPlay:"▶ 再生",videoChange:"🎬 動画をアップ/変更",
  docTitle:"本人確認を行います",docDesc:"書類は確認後、直ちに破棄されます。（タップしてアップロード — デモ）",
  docs:[{ic:"🪪",n:"身分証",s:"本人確認用"},{ic:"💍",n:"独身証明書",s:"3ヶ月以内発行"}],
  up:["アップロード","完了 ✓"],next:"次へ",saving:"保存中…",
@@ -702,10 +704,13 @@ function pickVideo(inp){
   const u=URL.createObjectURL(f),v=document.createElement('video');
   v.preload='metadata';
   v.onloadedmetadata=()=>{
-    URL.revokeObjectURL(u);
     const b=$('vbtn');
-    if(v.duration>11){videoBlob=null;if(err)err.textContent=t.videoLong;if(b){b.textContent=t.videoBtn;b.classList.remove('has');}}
-    else{videoBlob=f;if(err)err.textContent='';if(b){b.textContent=t.videoSet;b.classList.add('has');}}
+    setTimeout(()=>{ // videoWidth 확정까지 잠시 대기
+      URL.revokeObjectURL(u);
+      if(v.duration>11){videoBlob=null;if(err)err.textContent=t.videoLong;if(b){b.textContent=t.videoBtn;b.classList.remove('has');}}
+      else if(!v.videoWidth){videoBlob=null;if(err)err.textContent=t.videoCodec;if(b){b.textContent=t.videoBtn;b.classList.remove('has');}}
+      else{videoBlob=f;if(err)err.textContent='';if(b){b.textContent=t.videoSet;b.classList.add('has');}}
+    },300);
   };
   v.src=u;
 }
@@ -1207,15 +1212,18 @@ async function changeVideo(inp){
   if(f.size>40*1024*1024){alert(t.videoBig);return;}
   const u=URL.createObjectURL(f),v=document.createElement('video');
   v.preload='metadata';
-  v.onloadedmetadata=async()=>{
-    URL.revokeObjectURL(u);
-    if(v.duration>11){alert(t.videoLong);return;}
-    videoBlob=f;
-    try{
-      const url=await uploadVideo();
-      let {error}=await sb.from('profiles').update({video_url:url}).eq('id',ME.id);
-      if(!error){MYPROF.video_url=url;renderMy();}
-    }catch(e){console.warn(e);}
+  v.onloadedmetadata=()=>{
+    setTimeout(async()=>{
+      URL.revokeObjectURL(u);
+      if(v.duration>11){alert(t.videoLong);return;}
+      if(!v.videoWidth){alert(t.videoCodec);return;}
+      videoBlob=f;
+      try{
+        const url=await uploadVideo();
+        let {error}=await sb.from('profiles').update({video_url:url}).eq('id',ME.id);
+        if(error){alert(error.message);}else{MYPROF.video_url=url;renderMy();}
+      }catch(e){alert(e.message||e);}
+    },300);
   };
   v.src=u;
 }
