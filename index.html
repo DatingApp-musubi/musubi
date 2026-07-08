@@ -143,6 +143,11 @@
   .tymini .e{font-size:28px;line-height:1;}
   .tymini b{display:block;font-size:12.5px;margin-top:6px;}
   .tymini span{font-size:9.5px;color:var(--muted);letter-spacing:1px;}
+  .cmblabel{font-size:11px;color:var(--muted);margin-top:14px;letter-spacing:1px;}
+  .cmbrow{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:8px;}
+  .cmbchip{border:1px solid #3a3128;background:var(--surface2);color:var(--gold-light);font-size:10.5px;font-weight:800;padding:5px 9px;border-radius:12px;cursor:pointer;letter-spacing:1px;}
+  .cmbchip:active{border-color:var(--gold);}
+  .combocard{margin-top:12px;background:#14100b;border:1px dashed rgba(201,164,92,.5);border-radius:16px;padding:16px;text-align:center;}
   .pinfo{position:absolute;left:20px;right:20px;bottom:18px;}
   .pinfo h2{font-size:24px;font-weight:700;}
   .pinfo h2 .age{font-size:19px;font-weight:400;color:#d8cdbb;margin-left:8px;}
@@ -411,7 +416,7 @@ kr:{
  myCard:["성격 검증 결과","전문의가 설계·감수한 심리평가와 화상 인터뷰를 거친 점수입니다. 6개월마다 갱신됩니다."],
  rows:[["온라인 심리평가 (전문의 설계·감수)","완료"],["심층 화상 인터뷰","예약됨"],["신분증·독신 확인","완료"]],
  memRow:["멤버십","NOBLESSE · 월 39만원 ›"],
- typesRow:"연애 유형 도감",typesTitle:"연애 유형 도감",typesTabM:"남성 8유형",typesTabF:"여성 7유형",
+ typesRow:"연애 유형 도감",typesTitle:"연애 유형 도감",typesTabM:"남성 8유형",typesTabF:"여성 7유형",comboLabel:"세부 조합 보기 — 서브 유형을 선택하세요",
  typesNote:"유형은 MPI 검사에서 가장 높게 나온 성향으로 정해지며, 프로필 사진 위 배지로 표시됩니다.",
  logout:"로그아웃",changePhoto:"📷 사진 변경",
  tiers:`<div class="tier-card"><div class="tn">CLASSIC</div><div class="tp">월 19만원 <small>/ 3개월 약정</small></div><ul><li>일일 추천 프로필 5명</li><li>주간 좋아요 10회</li><li>자동 번역 채팅</li><li>성격 검증 배지 + 점수 표시</li></ul></div>
@@ -484,7 +489,7 @@ jp:{
  myCard:["性格認証の結果","専門医が設計・監修した心理評価によるスコアです。6ヶ月ごとに更新されます。"],
  rows:[["オンライン心理評価（専門医設計・監修）","完了"],["ビデオ面接","予約済み"],["身分証・独身証明","完了"]],
  memRow:["メンバーシップ","無料 ›"],
- typesRow:"恋愛タイプ図鑑",typesTitle:"恋愛タイプ図鑑",typesTabM:"男性8タイプ",typesTabF:"女性7タイプ",
+ typesRow:"恋愛タイプ図鑑",typesTitle:"恋愛タイプ図鑑",typesTabM:"男性8タイプ",typesTabF:"女性7タイプ",comboLabel:"詳しい組み合わせ — サブタイプを選択",
  typesNote:"タイプはMPI検査で最も高かった傾向で決まり、プロフィール写真のバッジとして表示されます。",
  logout:"ログアウト",changePhoto:"📷 写真を変更",
  tiers:`<div class="freenote">🌸 女性会員はすべての機能を無料でご利用いただけます。</div>
@@ -814,6 +819,49 @@ function typeCard(r){
     <div class="tm">${t1.m[LANG]}<br><span style="color:#6b5f4f">${LANG==='kr'?'서브 유형':'サブタイプ'}: ${t2.e} ${t2.n[LANG]} (${t2.c})</span></div>
   </div>`;
 }
+/* ---------------- 조합(주×서브) 카드 생성 ---------------- */
+const SUBMOD={
+ K1:{kr:"따뜻한 공감이 배어 있는",jp:"温かい共感がにじむ"},K2:{kr:"단단한 믿음직함을 갖춘",jp:"揺るがない頼もしさを備えた"},
+ K3:{kr:"주저 없는 추진력을 지닌",jp:"ためらわない推進力を持つ"},K4:{kr:"세심한 꾸준함이 더해진",jp:"細やかなまめさが加わった"},
+ K5:{kr:"풍부한 표현력을 겸비한",jp:"豊かな表現力を兼ね備えた"},K6:{kr:"리드할 줄 아는",jp:"リードできる"},
+ K7:{kr:"여유와 존중이 몸에 밴",jp:"余裕と尊重が身についた"},K8:{kr:"모임에서 빛나는",jp:"集まりで輝く"},
+ J1:{kr:"부드러운 조화력을 갖춘",jp:"柔らかな調和力を備えた"},J2:{kr:"밝은 에너지가 넘치는",jp:"明るいエネルギーあふれる"},
+ J3:{kr:"공정한 균형감각을 지닌",jp:"フェアなバランス感覚を持つ"},J4:{kr:"귀 기울일 줄 아는",jp:"耳を傾けられる"},
+ J5:{kr:"차분한 안정감이 감도는",jp:"穏やかな安定感が漂う"},J6:{kr:"자립심이 뚜렷한",jp:"自立心のはっきりした"},
+ J7:{kr:"어울림에 능한",jp:"人付き合いに長けた"}};
+const SUBLINE={
+ K1:{kr:"연애에서 상대의 감정을 놓치지 않는 세심함이 더해집니다.",jp:"恋愛で相手の感情を見逃さない繊細さが加わります。"},
+ K2:{kr:"흔들리는 순간에도 관계를 지탱하는 안정감이 더해집니다.",jp:"揺れる瞬間にも関係を支える安定感が加わります。"},
+ K3:{kr:"관계를 진전시키는 결정적 한 걸음이 빨라집니다.",jp:"関係を進める決定的な一歩が速くなります。"},
+ K4:{kr:"작은 약속과 기념일을 챙기는 꾸준함이 더해집니다.",jp:"小さな約束や記念日を大切にするまめさが加わります。"},
+ K5:{kr:"마음을 말로 전하는 온도가 한층 높아집니다.",jp:"気持ちを言葉で伝える温度が一段と上がります。"},
+ K6:{kr:"데이트와 일상을 이끄는 든든한 리드가 더해집니다.",jp:"デートと日常を導く頼れるリードが加わります。"},
+ K7:{kr:"상대의 공간을 존중하는 어른스러운 여유가 더해집니다.",jp:"相手の空間を尊重する大人の余裕が加わります。"},
+ K8:{kr:"함께 있는 자리를 즐겁게 만드는 흥이 더해집니다.",jp:"一緒にいる場を楽しくするノリが加わります。"},
+ J1:{kr:"갈등을 부드럽게 감싸는 조화가 더해집니다.",jp:"衝突を柔らかく包む調和が加わります。"},
+ J2:{kr:"관계에 웃음과 활기가 더해집니다.",jp:"関係に笑いと活気が加わります。"},
+ J3:{kr:"주고받음이 공평한, 오래가는 균형이 더해집니다.",jp:"ギブアンドテイクが公平な、長続きするバランスが加わります。"},
+ J4:{kr:"상대가 마음을 열게 만드는 경청이 더해집니다.",jp:"相手が心を開きたくなる傾聴が加わります。"},
+ J5:{kr:"다툼을 대화로 바꾸는 차분함이 더해집니다.",jp:"ケンカを対話に変える落ち着きが加わります。"},
+ J6:{kr:"기대지 않고 나란히 걷는 자립이 더해집니다.",jp:"寄りかからず並んで歩く自立が加わります。"},
+ J7:{kr:"둘의 세계를 넓혀주는 사교성이 더해집니다.",jp:"二人の世界を広げる社交性が加わります。"}};
+function showCombo(mk,sk){
+  const t1=TYPES[TG][mk],t2=TYPES[TG][sk];
+  const mainB=t1.b[LANG].filter(x=>x.startsWith('○')).slice(0,3);
+  const subB=t2.b[LANG].filter(x=>x.startsWith('○')).slice(0,2).map(x=>'◆'+x.slice(1));
+  const warn=t1.b[LANG].find(x=>x.startsWith('△'));
+  const box=document.getElementById('cmb-'+mk);
+  box.innerHTML=`<div class="combocard">
+    <div class="tcode"><span>MUSUBI TYPE</span><b>${t1.c}-${t2.c}</b></div>
+    <div class="te" style="font-size:34px;">${t1.e}${t2.e}</div>
+    <div class="tn2" style="font-size:17px;">${SUBMOD[sk][LANG]}<br>${t1.n[LANG]}</div>
+    <div style="font-size:11.5px;color:#a9d4bc;margin-top:8px;line-height:1.65;">${SN(mk)} × ${SN(sk)} — ${SUBLINE[sk][LANG]}</div>
+    <ul class="tbul">${[...mainB,...subB].map(x=>`<li${x.startsWith('◆')?' style="color:#a9d4bc"':''}>${x}</li>`).join('')}${warn?`<li class="warn">${warn}</li>`:''}</ul>
+    <div class="tquote">“${t1.q[LANG]}”</div>
+    <div class="tm">${t1.m[LANG]}</div>
+  </div>`;
+  box.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
 let TG='m';
 function openTypes(){TG=VER||'m';renderTypes();showScreen('scr-types');}
 function renderTypes(){
@@ -836,6 +884,9 @@ function renderTypes(){
         <ul class="tbul">${ty.b[LANG].map(x=>`<li${x.startsWith('△')?' class="warn"':''}>${x}</li>`).join('')}</ul>
         <div class="tquote">“${ty.q[LANG]}”</div>
         <div class="tm">${ty.m[LANG]}</div>
+        <div class="cmblabel">${t.comboLabel}</div>
+        <div class="cmbrow">${list.filter(s=>s!==c).map(s=>`<button class="cmbchip" onclick="showCombo('${c}','${s}')">${ty.c}-${TYPES[TG][s].c}</button>`).join('')}</div>
+        <div id="cmb-${c}"></div>
       </div>`;}).join('')}
     <div style="font-size:11px;color:#6b5f4f;line-height:1.7;padding:4px 4px 20px;">${t.typesNote}</div>`;
   document.getElementById('y-body').scrollTop=0;
