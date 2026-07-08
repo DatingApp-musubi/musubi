@@ -155,6 +155,11 @@
   .vidov video{width:92%;max-height:72%;border-radius:18px;background:#000;}
   .vidclose{position:absolute;top:max(18px,env(safe-area-inset-top));left:18px;font-size:22px;color:#fff;cursor:pointer;}
   .vplay{position:absolute;right:16px;bottom:150px;width:48px;height:48px;border-radius:50%;background:rgba(13,11,9,.75);border:1.5px solid var(--gold);color:var(--gold-light);display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;backdrop-filter:blur(4px);}
+  .prevov{position:absolute;inset:0;background:rgba(6,5,4,.97);z-index:88;display:none;}
+  .prevov.show{display:block;}
+  .prevnote{position:absolute;top:max(16px,env(safe-area-inset-top));left:0;right:0;text-align:center;font-size:12.5px;color:var(--gold-light);letter-spacing:.5px;}
+  .prevov .pcard{position:absolute;left:16px;right:16px;top:52px;bottom:96px;}
+  .prevclose{position:absolute;bottom:24px;left:16px;right:16px;width:auto;}
   .pinfo{position:absolute;left:20px;right:20px;bottom:18px;}
   .pinfo h2{font-size:24px;font-weight:700;}
   .pinfo h2 .age{font-size:19px;font-weight:400;color:#d8cdbb;margin-left:8px;}
@@ -310,6 +315,12 @@
     <div class="tiers" id="y-body"></div>
   </div>
 
+  <div class="prevov" id="prevov">
+    <div class="prevnote" id="prevnote"></div>
+    <div id="prevcard"></div>
+    <button class="goldbtn prevclose" id="prevclosebtn" onclick="closePreview()"></button>
+  </div>
+
   <div class="vidov" id="vidov" onclick="closeVideo()">
     <video id="vidplayer" playsinline controls></video>
     <div class="vidclose">✕</div>
@@ -432,6 +443,7 @@ kr:{
  typesRow:"연애 유형 도감",typesTitle:"연애 유형 도감",typesTabM:"남성 8유형",typesTabF:"여성 7유형",comboLabel:"세부 조합 보기 — 서브 유형을 선택하세요",
  typesNote:"유형은 MPI 검사에서 가장 높게 나온 성향으로 정해지며, 프로필 사진 위 배지로 표시됩니다.",
  logout:"로그아웃",changePhoto:"📷 사진 변경",
+ previewRow:"내 카드 미리보기",previewNote:"🇯🇵 상대 회원의 화면에 이렇게 보입니다",close:"닫기",
  tiers:`<div class="tier-card"><div class="tn">CLASSIC</div><div class="tp">월 19만원 <small>/ 3개월 약정</small></div><ul><li>일일 추천 프로필 5명</li><li>주간 좋아요 10회</li><li>자동 번역 채팅</li><li>성격 검증 배지 + 점수 표시</li></ul></div>
  <div class="tier-card hot"><div class="tag">가장 인기</div><div class="tn">NOBLESSE</div><div class="tp">월 39만원 <small>/ 3개월 약정</small></div><ul><li>일일 추천 15명 + 노출 상향</li><li>주간 좋아요 20회 + 슈퍼 관심 3회</li><li>성격 궁합 리포트</li><li>월 1회 화상 미팅 통역 지원 (30분)</li></ul></div>
  <div class="tier-card"><div class="tn">BLACK</div><div class="tp">월 89만원 <small>/ 6개월 약정</small></div><ul><li>전담 매니저 1:1 큐레이션 매칭</li><li>전문의 감수 심층 성격 리포트 + 관계 코칭</li><li>무제한 좋아요 · 최상위 노출</li><li>오프라인 만남 일정·통역 동행 지원</li></ul></div>
@@ -514,6 +526,7 @@ jp:{
  typesRow:"恋愛タイプ図鑑",typesTitle:"恋愛タイプ図鑑",typesTabM:"男性8タイプ",typesTabF:"女性7タイプ",comboLabel:"詳しい組み合わせ — サブタイプを選択",
  typesNote:"タイプはMPI検査で最も高かった傾向で決まり、プロフィール写真のバッジとして表示されます。",
  logout:"ログアウト",changePhoto:"📷 写真を変更",
+ previewRow:"自分のカードをプレビュー",previewNote:"🇰🇷 相手会員の画面にはこう見えます",close:"閉じる",
  tiers:`<div class="freenote">🌸 女性会員はすべての機能を無料でご利用いただけます。</div>
  <div class="tier-card hot"><div class="tn">安心・安全への取り組み</div><ul><li>専門医が設計・監修した性格評価を男女全会員が通過</li><li>全会員の独身証明書を確認</li><li>24時間の通報・ブロック対応</li></ul></div>`,
  events:[
@@ -1139,6 +1152,7 @@ function renderMy(){
       ${MYPROF?.video_url?`<span style="color:var(--gold);cursor:pointer;" onclick="playVideo('${MYPROF.video_url}')">${t.videoPlay}</span> · `:`<span style="color:var(--muted)">${t.videoNone}</span> · `}
       <span style="color:var(--gold);cursor:pointer;" onclick="$('myvfile').click()">${t.videoChange}</span></span></div>
     <input type="file" id="myvfile" accept="video/mp4,video/quicktime,video/webm" style="display:none" onchange="changeVideo(this)">
+    <div class="vrow link" onclick="previewMe()"><span class="lab">👁 ${t.previewRow}</span><span style="color:var(--gold);font-size:13px">›</span></div>
     <div class="vrow link" onclick="openTypes()"><span class="lab">${t.typesRow}</span><span style="color:var(--gold);font-size:13px">8+7 ›</span></div>
     <div class="vrow link" onclick="showScreen('scr-tier')"><span class="lab">${t.memRow[0]}</span><span style="color:var(--gold);font-size:13px">${t.memRow[1]}</span></div>
     <button class="ghostbtn" onclick="logout()" style="color:#8d7f6d;">${t.logout}</button>`;
@@ -1160,6 +1174,31 @@ async function changePhoto(inp){
   };img.src=e.target.result;};
   rd.readAsDataURL(f);
 }
+function previewMe(){
+  const t=T();
+  const viewerLang=VER==='m'?'jp':'kr'; // 반대 성별 회원의 기본 언어
+  const vt=L[viewerLang];
+  let ty=null;
+  if(RESULT&&RESULT.scores){
+    const sorted=[...RESULT.scores].sort((a,b)=>b.mean-a.mean);
+    const code=sorted[0].c,tt=TYPES[VER]&&TYPES[VER][code];
+    if(tt)ty={e:tt.e,s:TSHORT[VER][code][viewerLang==='kr'?0:1]};
+  }
+  const chips=RESULT&&RESULT.scores?[...RESULT.scores].filter(s=>s.gate!==2).sort((a,b)=>b.mean-a.mean).slice(0,3)
+    .map(s=>`${(SCALE_NAMES[s.c]||{})[viewerLang]||s.c} ${Math.round(s.mean*20)}`):[];
+  $('prevnote').textContent=t.previewNote;
+  $('prevclosebtn').textContent=t.close;
+  $('prevcard').innerHTML=`<div class="pcard">
+    <div class="photo" ${MYPROF&&MYPROF.photo_url?`style="background-image:url('${MYPROF.photo_url}')"`:''}></div><div class="grad"></div>
+    <div class="vbadge">${vt.vbadge}</div>${ty?`<div class="tbadge">${ty.e} ${ty.s}</div>`:''}
+    ${MYPROF&&MYPROF.video_url?`<div class="vplay" onclick="playVideo('${MYPROF.video_url}')">▶</div>`:''}
+    <div class="pinfo"><h2>${esc(MYPROF?.nickname||'')}<span class="age">${MYPROF?.age||''}</span></h2>
+    <div class="loc">📍 ${esc([MYPROF?.region,MYPROF?.bio].filter(Boolean).join(' · '))}</div>
+    <div class="chips">${chips.map(x=>`<span class="chip score">${x}</span>`).join('')}</div></div>
+  </div>`;
+  $('prevov').classList.add('show');
+}
+function closePreview(){$('prevov').classList.remove('show');}
 function playVideo(url){const v=$('vidplayer');v.src=url;$('vidov').classList.add('show');v.play().catch(()=>{});}
 function closeVideo(){const v=$('vidplayer');v.pause();v.src='';$('vidov').classList.remove('show');}
 async function changeVideo(inp){
