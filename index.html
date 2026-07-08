@@ -121,6 +121,7 @@
   .grad{position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,rgba(10,8,6,.93) 100%);}
   .vbadge{position:absolute;top:16px;left:16px;background:rgba(13,11,9,.75);border:1px solid var(--gold);color:var(--gold-light);font-size:11px;padding:5px 10px;border-radius:20px;backdrop-filter:blur(4px);}
   .dbadge{position:absolute;top:16px;right:16px;background:rgba(13,11,9,.75);border:1px solid #555;color:#999;font-size:10px;padding:4px 9px;border-radius:20px;}
+  .tbadge{position:absolute;top:16px;right:16px;background:linear-gradient(135deg,#c9a45c,#a07c33);color:#171008;font-size:11.5px;font-weight:800;padding:6px 12px;border-radius:20px;box-shadow:0 4px 14px rgba(0,0,0,.45);}
   .pinfo{position:absolute;left:20px;right:20px;bottom:18px;}
   .pinfo h2{font-size:24px;font-weight:700;}
   .pinfo h2 .age{font-size:19px;font-weight:400;color:#d8cdbb;margin-left:8px;}
@@ -341,7 +342,7 @@ kr:{
  mpiDesc:"정신건강의학과 전문의가 설계·감수한 심리평가입니다. 각 문장이 자신과 얼마나 일치하는지 솔직하게 응답해 주세요. 정답은 없으며, 잘 보이려는 응답은 타당도 지표가 감지합니다. 소요 약 12~15분.",
  mpiStart:"검사 시작",back:"← 이전",
  resTitle:"검증 결과",
- vPass:["1차 통과 — 화상 인터뷰로 진행","모든 척도가 기준을 충족했습니다. 검사 결과의 일관성을 화상 인터뷰에서 최종 확인합니다."],
+ vPass:["검사 완료 — 나의 연애 유형","응답이 기록되었습니다. 아래 유형 카드는 프로필에 배지로 표시되어 상대 회원에게 보여집니다."],
  vHold:["조건부 — 화상 인터뷰에서 확인","기준 미달 척도는 인터뷰에서 행동 사례로 확인 후 판정합니다."],
  vFail:["불합격","기준 미달 척도가 2개 이상입니다. 6개월 후 재신청이 가능합니다."],
  vSafe:["불합격 (안전 기준 미달)","존중·비구속 척도가 엄격 기준(3.8) 미만으로, 단독 사유로 가입이 제한됩니다."],
@@ -368,7 +369,7 @@ kr:{
  evTitle:'이벤트<em>.</em>',
  evBanner:s=>`🎪 <b>노는 법은 무스비가 설계합니다.</b><br>호스트가 이끄는 검증 회원 전용 정기 모임 · 내 사교성 ${s} — ${parseFloat(s)>=3.6?'우선 초대 대상 ✦':'일반 초대'}`,
  evHot:"마감 임박",evJoin:["참가 신청","신청 완료 ✓"],
- myTier:t=>`✦ 성격 검증 ${t} · NOBLESSE`,
+ myTier:t=>`✦ ${t} · NOBLESSE MEMBER`,
  myCard:["성격 검증 결과","전문의가 설계·감수한 심리평가와 화상 인터뷰를 거친 점수입니다. 6개월마다 갱신됩니다."],
  rows:[["온라인 심리평가 (전문의 설계·감수)","완료"],["심층 화상 인터뷰","예약됨"],["신분증·독신 확인","완료"]],
  memRow:["멤버십","NOBLESSE · 월 39만원 ›"],
@@ -403,7 +404,7 @@ jp:{
  mpiDesc:"精神科専門医が設計・監修した心理評価です。正直にお答えください。良く見せようとする回答は妥当性指標が検知します。所要約12〜15分。",
  mpiStart:"検査をはじめる",back:"← 戻る",
  resTitle:"審査結果",
- vPass:["一次通過 — ビデオ面接へ","すべての尺度が基準を満たしました。"],
+ vPass:["検査完了 — あなたの恋愛タイプ","回答が記録されました。下のタイプカードはプロフィールにバッジとして表示されます。"],
  vHold:["条件付き — ビデオ面接で確認","基準未達の尺度は面接で確認のうえ判定します。"],
  vFail:["不合格","基準未達の尺度が2つ以上です。6ヶ月後に再申請できます。"],
  vSafe:["不合格","基準未達の尺度があります。"],
@@ -430,7 +431,7 @@ jp:{
  evTitle:'イベント<em>.</em>',
  evBanner:s=>`🎪 <b>遊び方はMUSUBIがデザインします。</b><br>認証会員限定イベント · ソーシャル指数 ${s} — ${parseFloat(s)>=3.6?'優先招待 ✦':'通常招待'}`,
  evHot:"締切間近",evJoin:["参加申込","申込完了 ✓"],
- myTier:t=>`✦ 性格認証 ${t} · 女性会員 無料`,
+ myTier:t=>`✦ ${t} · 女性会員 無料`,
  myCard:["性格認証の結果","専門医が設計・監修した心理評価によるスコアです。6ヶ月ごとに更新されます。"],
  rows:[["オンライン心理評価（専門医設計・監修）","完了"],["ビデオ面接","予約済み"],["身分証・独身証明","完了"]],
  memRow:["メンバーシップ","無料 ›"],
@@ -649,17 +650,9 @@ async function score(){
     const vKeyed=o.dir===-1?6-ANS[vIdx]:ANS[vIdx];
     return Math.abs(vKeyed-refKeyed)>=3;
   });
-  const invalid=sdHi>=5||infHi>=1||incFlags.every(x=>x);
-  const gateFails=scores.filter(s=>s.gate===1&&s.mean<s.cut).length;
-  const safeFail=scores.some(s=>s.gate===2&&s.mean<s.cut);
-  let verdict;
-  if(invalid)verdict="invalid";
-  else if(safeFail)verdict="safefail";
-  else if(gateFails>=2)verdict="fail";
-  else if(gateFails===1||sdHi===4)verdict="hold";
-  else verdict="pass";
+  const verdict="pass"; // 파일럿 정책: 검사 완료 시 전원 통과 (타당도 지표는 연구용으로 기록만)
   RESULT={scores,verdict,sdHi,infHi,incN:incFlags.filter(x=>x).length,date:new Date().toISOString().slice(0,10)};
-  if(LIVE&&verdict!=="invalid"){
+  if(LIVE){
     const soc=scores.find(s=>s.gate===0);
     await sb.from('profiles').update({mpi:RESULT,social:soc.mean}).eq('id',ME.id);
   }
@@ -681,14 +674,22 @@ function resultScreen(){
     :r.verdict==="invalid"?`<button class="goldbtn" onclick="startTest()">${t.retry}</button>`
     :`<button class="goldbtn" onclick="logout()">${t.restart}</button>`}</div>`;
 }
-function scoreBar(s,t,noPill){
-  const pass=s.mean>=s.cut;
-  const pill=noPill?'':(s.gate===0?(pass?`<span class="pill p-ok">${t.evOk}</span>`:`<span class="pill p-warn">${t.evNo}</span>`)
-    :(pass?`<span class="pill p-ok">${t.pass}</span>`:(s.gate===2?`<span class="pill p-bad">${t.safeMiss}</span>`:`<span class="pill p-warn">${t.miss}</span>`)));
+function scoreBar(s,t){
+  const pill=s.gate===0&&s.mean>=s.cut?`<span class="pill p-ok">${t.evOk}</span>`:'';
   return `<div class="scrow"><div class="st1"><span>${s.n}${pill}</span><span class="sv">${s.mean.toFixed(2)}</span></div>
-    <div class="sbar"><div class="sfill" style="width:${(s.mean-1)/4*100}%;background:${pass?'linear-gradient(90deg,#8fae7c,#5f9c7a)':'linear-gradient(90deg,#b0564f,#8a423d)'}"></div>
-    <div class="cut" style="left:${(s.cut-1)/4*100}%"></div></div>
-    <div class="st2"><span>1.0</span><span>${t.cutLab} ${s.cut}</span><span>5.0</span></div></div>`;
+    <div class="sbar"><div class="sfill" style="width:${(s.mean-1)/4*100}%;background:linear-gradient(90deg,#8fae7c,#5f9c7a)"></div></div>
+    <div class="st2"><span>1.0</span><span>5.0</span></div></div>`;
+}
+/* ---------------- 유형 짧은 이름/배지 ---------------- */
+const TSHORT={
+ m:{K1:["치유가","癒し手"],K2:["수호자","守護者"],K3:["개척자","開拓者"],K4:["기록가","記録家"],K5:["시인","詩人"],K6:["선장","船長"],K7:["동반자","相棒"],K8:["불꽃","盛り上げ役"]},
+ f:{J1:["조율가","紡ぎ手"],J2:["태양","太陽"],J3:["공정파","フェア派"],J4:["경청가","聞き手"],J5:["평온가","凪"],J6:["자립가","旅人"],J7:["모임의 꽃","宴の華"]}};
+function typeOf(mpi,gender){
+  if(!mpi||!mpi.scores)return null;
+  const sorted=[...mpi.scores].sort((a,b)=>b.mean-a.mean);
+  const code=sorted[0].c,ty=TYPES[gender]&&TYPES[gender][code];
+  if(!ty)return null;
+  return {e:ty.e,s:TSHORT[gender][code][LANG==='kr'?0:1],c:ty.c};
 }
 /* ---------------- 성격 유형 카드 ---------------- */
 const TYPES={
@@ -784,7 +785,7 @@ async function loadCards(){
     const {data:profs}=await sb.from('profiles').select('*')
       .eq('gender',VER==='m'?'f':'m').neq('id',ME.id).not('mpi','is',null).limit(30);
     CARDS=(profs||[]).filter(p=>!likedSet.has(p.id)&&['pass','hold'].includes(p.mpi?.verdict))
-      .map(p=>({real:true,id:p.id,n:esc(p.nickname),a:p.age||'',l:esc([p.region,p.bio].filter(Boolean).join(' · ')),ph:p.photo_url,c:chipsFromMpi(p.mpi)}));
+      .map(p=>({real:true,id:p.id,n:esc(p.nickname),a:p.age||'',l:esc([p.region,p.bio].filter(Boolean).join(' · ')),ph:p.photo_url,c:chipsFromMpi(p.mpi),ty:typeOf(p.mpi,VER==='m'?'f':'m')}));
   }
   if(CARDS.length===0)CARDS=t.demoProfiles.map(p=>({real:false,...p}));
   renderCards();
@@ -798,7 +799,7 @@ function renderCards(){
     d.className='pcard';d.id='card'+k;
     if(k>idx){d.style.transform='scale(.95) translateY(10px)';d.style.filter='brightness(.6)';}
     d.innerHTML=`<div class="photo" ${p.ph?`style="background-image:url('${p.ph}')"`:''}></div><div class="grad"></div>
-      <div class="vbadge">${t.vbadge}</div>${p.real?'':`<div class="dbadge">${t.demoBadge}</div>`}
+      <div class="vbadge">${t.vbadge}</div>${p.ty?`<div class="tbadge">${p.ty.e} ${p.ty.s}</div>`:p.real?'':`<div class="dbadge">${t.demoBadge}</div>`}
       <div class="pinfo"><h2>${p.n}<span class="age">${p.a}</span></h2><div class="loc">📍 ${p.l}</div>
       <div class="chips">${(p.c||[]).map(x=>`<span class="chip ${x[1]?'score':''}">${x[0]}</span>`).join('')}</div></div>`;
     wrap.appendChild(d);
@@ -829,10 +830,11 @@ async function loadLikes(){
   $('l-head').innerHTML=t.likesHead(ids.length);
   if(ids.length===0){$('l-grid').innerHTML=`<div class="gempty">${t.noLikes}</div>`;return;}
   const {data:profs}=await sb.from('profiles').select('*').in('id',ids);
-  $('l-grid').innerHTML=(profs||[]).map(p=>`
-    <div class="mcell" ${p.photo_url?`style="background-image:url('${p.photo_url}')"`:''}>
-      <div class="gr"></div><div class="st">✦</div>
-      <div class="nm">${esc(p.nickname)} · ${p.age||''} · ${esc(p.region||'')}</div></div>`).join('');
+  $('l-grid').innerHTML=(profs||[]).map(p=>{
+    const ty=typeOf(p.mpi,VER==='m'?'f':'m');
+    return `<div class="mcell" ${p.photo_url?`style="background-image:url('${p.photo_url}')"`:''}>
+      <div class="gr"></div><div class="st">${ty?`${ty.e} ${ty.s}`:'✦'}</div>
+      <div class="nm">${esc(p.nickname)} · ${p.age||''} · ${esc(p.region||'')}</div></div>`;}).join('');
 }
 async function getMatches(){
   const {data:a}=await sb.from('likes').select('liked').eq('liker',ME.id);
@@ -852,7 +854,7 @@ async function loadChats(){
     const last=(msgs||[]).find(m=>m.sender===p.id||m.receiver===p.id);
     return `<div class="citem" onclick='openRoom(${JSON.stringify(p.id)})'>
       <div class="avatar" ${p.photo_url?`style="background-image:url('${p.photo_url}')"`:''}></div>
-      <div class="cc"><div class="cn">${esc(p.nickname)} <span style="font-size:10px;color:var(--gold)">✦</span></div>
+      <div class="cc"><div class="cn">${esc(p.nickname)} <span style="font-size:10px;color:var(--gold)">${(ty=>ty?`${ty.e} ${ty.s}`:'✦')(typeOf(p.mpi,VER==='m'?'f':'m'))}</span></div>
       <div class="cm">${last?esc(last.content):'—'}</div></div>
       <div class="ct">${last?new Date(last.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):''}</div></div>`;
   }).join('');
@@ -894,7 +896,8 @@ function subscribeRT(){
 }
 function renderMy(){
   const t=T(),r=RESULT;
-  const vt=r?(r.verdict==="pass"?"PASS":LANG==='kr'?"조건부":"条件付き"):"—";
+  const myTy=r?typeOf(r,VER):null;
+  const vt=myTy?`${myTy.e} ${myTy.s}`:"—";
   $('m-title').innerHTML=t.myTitle;
   $('m-body').innerHTML=`
     <div class="myhead">
