@@ -516,7 +516,7 @@ const COMPAT={
 const L={
 kr:{
  likert:["전혀 그렇지 않다","그렇지 않은 편이다","보통이다","그런 편이다","매우 그렇다"],
- tag:"국경을 넘는 인연.<br>직업도, 재산도 아닌<br><b style='color:var(--gold-light)'>성격</b>으로 검증된 만남",
+ tag:"한국과 일본, 놀면서 가까워지는 곳.<br>보드게임 · 노래방 · 요리 모임 —<br><b style='color:var(--gold-light)'>같이 놀다 보면</b> 자연스럽게 이어지는 인연",
  login:"로그인",signup:"회원가입",email:"이메일",pw:"비밀번호 (6자 이상)",
  brandSub:"무스비 · 인연을 맺다",googleBtn:"Google로 계속하기",kakaoBtn:"💬 카카오로 계속하기",orMail:"또는 이메일로",
  errCred:"이메일과 6자 이상 비밀번호를 입력해 주세요.",oauthErr:" 로그인 설정이 아직 완료되지 않았습니다.",
@@ -559,7 +559,7 @@ kr:{
  doneTitle:"인증이 완료되었습니다",doneDesc:"골드 인증 배지가 발급되었습니다.<br>이제 검증된 회원들의 프로필을 만나보세요.",
  enter:"무스비 시작하기",
  pass:"PASS",miss:"기준 미달",safeMiss:"미달 (안전 기준)",evOk:"이벤트 우선 초대",evNo:"일반 초대",cutLab:"기준",
- sub:"PERSONALITY VERIFIED",tabs:["추천","관심","이벤트","대화","MY"],
+ sub:"한일 놀이 문화 커뮤니티",tabs:["추천","관심","이벤트","대화","MY"],
  empty:"지금 보여드릴 프로필을 모두 확인했습니다.<br>새 회원이 가입하면 이곳에 나타납니다.",
  vbadge:"✦ 성격 검증 PASS",demoBadge:"DEMO",matchH:"인연이 맺어졌습니다",
  matchP:n=>`${n} 님도 회원님에게 관심을 보냈어요.<br>두 분 모두 성격 검증을 통과한 회원입니다.`,
@@ -615,7 +615,7 @@ kr:{
 },
 jp:{
  likert:["全く違う","違う方だ","どちらとも言えない","そう思う方だ","とてもそう思う"],
- tag:"国境を越えるご縁。<br>職業でも年収でもなく<br><b style='color:var(--gold-light)'>性格</b>で審査される出会い",
+ tag:"韓国と日本、遊びながら仲良くなる場所。<br>ボードゲーム・カラオケ・料理会 —<br><b style='color:var(--gold-light)'>一緒に遊ぶうちに</b>自然につながるご縁",
  login:"ログイン",signup:"新規登録",email:"メールアドレス",pw:"パスワード（6文字以上）",
  brandSub:"結び・むすび",googleBtn:"Googleで続ける",kakaoBtn:"💬 カカオで続ける",orMail:"またはメールで",
  errCred:"メールアドレスと6文字以上のパスワードを入力してください。",oauthErr:" ログイン設定がまだ完了していません。",
@@ -658,7 +658,7 @@ jp:{
  doneTitle:"認証が完了しました",doneDesc:"ゴールド認証バッジが発行されました。",
  enter:"MUSUBIをはじめる",
  pass:"PASS",miss:"基準未達",safeMiss:"未達",evOk:"イベント優先招待",evNo:"通常招待",cutLab:"基準",
- sub:"性格認証マッチ",tabs:["おすすめ","いいね","イベント","トーク","マイ"],
+ sub:"日韓あそび文化コミュニティ",tabs:["おすすめ","いいね","イベント","トーク","マイ"],
  empty:"表示できるプロフィールをすべて確認しました。<br>新しい会員が登録するとここに表示されます。",
  vbadge:"✦ 性格認証 PASS",demoBadge:"DEMO",matchH:"ご縁が結ばれました",
  matchP:n=>`${n}さんもあなたに関心を寄せています。`,
@@ -822,10 +822,10 @@ function pickVer(){
   const t=T();
   $('ob').innerHTML=`<div class="step">STEP 1 / 5</div><h2>${t.pickTitle}</h2>
   <div class="obody" style="padding-top:12px;">
-    <button class="verbtn" onclick="setGN('m','kr')"><span class="ic">🤵</span><span><b>🇰🇷 ${t.pickKM}</b><span>MPI-M · 74 · ${t.pickMatch}: 🇯🇵${t.pickJF}</span></span></button>
-    <button class="verbtn" onclick="setGN('f','jp')"><span class="ic">👰</span><span><b>🇯🇵 ${t.pickJF}</b><span>MPI-F · 66 · ${t.pickMatch}: 🇰🇷${t.pickKM}</span></span></button>
-    <button class="verbtn" onclick="setGN('m','jp')"><span class="ic">🤵</span><span><b>🇯🇵 ${t.pickJM}</b><span>MPI-M · 74 · ${t.pickMatch}: 🇰🇷${t.pickKF}</span></span></button>
-    <button class="verbtn" onclick="setGN('f','kr')"><span class="ic">👰</span><span><b>🇰🇷 ${t.pickKF}</b><span>MPI-F · 66 · ${t.pickMatch}: 🇯🇵${t.pickJM}</span></span></button>
+    <button class="verbtn" onclick="setGN('m','kr')"><span class="ic">🤵</span><span><b>🇰🇷 ${t.pickKM}</b><span>MPI-M · 74</span></span></button>
+    <button class="verbtn" onclick="setGN('f','jp')"><span class="ic">👰</span><span><b>🇯🇵 ${t.pickJF}</b><span>MPI-F · 66</span></span></button>
+    <button class="verbtn" onclick="setGN('m','jp')"><span class="ic">🤵</span><span><b>🇯🇵 ${t.pickJM}</b><span>MPI-M · 74</span></span></button>
+    <button class="verbtn" onclick="setGN('f','kr')"><span class="ic">👰</span><span><b>🇰🇷 ${t.pickKF}</b><span>MPI-F · 66</span></span></button>
   </div>`;
 }
 function setGN(g,n){VER=g;NAT=n;if(!LANGSET){LANG=n;updateLangSw();}photoBlob=null;videoBlob=null;profileStep();}
@@ -1092,10 +1092,10 @@ async function loadRecs(sfx){
   if(GUEST||!LIVE||!ME){wrap.innerHTML=`<div style="font-size:12px;color:var(--muted);padding:8px 2px;line-height:1.6;">${t.recGuest}</div>`;return;}
   const my=topCode(r);
   const comp=new Set(COMPAT[my]||[]);
-  const og=VER==='m'?'f':'m', on=NAT==='kr'?'jp':'kr';
+  const og=VER==='m'?'f':'m';
   const {data:profs}=await sb.from('profiles').select('*').eq('gender',og).neq('id',ME.id).not('mpi','is',null).limit(60);
   const top=(profs||[])
-    .filter(p=>natOf(p)===on&&!BLOCKED.has(p.id)&&comp.has(topCode(p.mpi)))
+    .filter(p=>!BLOCKED.has(p.id)&&comp.has(topCode(p.mpi)))
     .map(p=>({p,ty:typeOf(p.mpi,og)}))
     .filter(x=>x.ty)
     .slice(0,5);
@@ -1340,13 +1340,13 @@ function natOf(p){return p.nat||(p.gender==='m'?'kr':'jp');}
 function topCode(mpi){return mpi&&mpi.scores?[...mpi.scores].sort((a,b)=>b.mean-a.mean)[0].c:null;}
 async function loadCards(){
   const t=T();CARDS=[];idx=0;
-  const og=VER==='m'?'f':'m', on=NAT==='kr'?'jp':'kr';
+  const og=VER==='m'?'f':'m';
   if(LIVE){
     const {data:liked}=await sb.from('likes').select('liked').eq('liker',ME.id);
     const likedSet=new Set((liked||[]).map(x=>x.liked));
     const {data:profs}=await sb.from('profiles').select('*')
       .eq('gender',og).neq('id',ME.id).not('mpi','is',null).limit(60);
-    CARDS=(profs||[]).filter(p=>!likedSet.has(p.id)&&!BLOCKED.has(p.id)&&natOf(p)===on&&['pass','hold'].includes(p.mpi?.verdict))
+    CARDS=(profs||[]).filter(p=>!likedSet.has(p.id)&&!BLOCKED.has(p.id)&&['pass','hold'].includes(p.mpi?.verdict))
       .map(p=>({real:true,id:p.id,n:esc(p.nickname),a:p.age||'',l:esc([p.region,p.bio].filter(Boolean).join(' · ')),ph:p.photo_url,v:p.video_url||null,c:chipsFromMpi(p.mpi),ty:typeOf(p.mpi,og),top:topCode(p.mpi)}));
     // 궁합 유형 우선 정렬 (안정 정렬: 궁합 유형이 앞으로)
     if(RESULT&&RESULT.scores){
@@ -1356,8 +1356,7 @@ async function loadCards(){
   }
   if(CARDS.length===0){
     const dp=T().demoProfiles;
-    const key=og==='f'?(on==='jp'?'f':'fkr'):(on==='kr'?'m':'mjp');
-    CARDS=(dp[key]||dp[og]||[]).map(p=>({real:false,...p}));
+    CARDS=[...(dp[og]||[]),...(dp[og==='f'?'fkr':'mjp']||[])].map(p=>({real:false,...p}));
   }
   renderCards();
 }
