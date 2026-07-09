@@ -574,7 +574,7 @@ kr:{
  evHot:"마감 임박",evJoin:["참가 신청","신청 완료 ✓"],
  myTier:t=>`✦ ${t} · NOBLESSE MEMBER`,
  myCard:["성격 검증 결과","전문의가 설계·감수한 심리평가와 화상 인터뷰를 거친 점수입니다. 6개월마다 갱신됩니다."],
- rows:[["온라인 심리평가 (전문의 설계·감수)","완료"],["신분증·독신 확인","완료"]],
+ rows:[["온라인 심리평가 (전문의 설계·감수)","완료"],["본인 확인 — 오프라인 이벤트 참가 시 진행","이벤트 시"]],
  memRow:["멤버십","NOBLESSE · 월 39만원 ›"],
  typesRow:"연애 유형 도감",typesTitle:"연애 유형 도감",typesTabM:"남성 8유형",typesTabF:"여성 7유형",comboLabel:"세부 조합 보기 — 서브 유형을 선택하세요",
  typesNote:"유형은 MPI 검사에서 가장 높게 나온 성향으로 정해지며, 프로필 사진 위 배지로 표시됩니다.",
@@ -673,14 +673,14 @@ jp:{
  evHot:"締切間近",evJoin:["参加申込","申込完了 ✓"],
  myTier:t=>`✦ ${t} · 女性会員 無料`,
  myCard:["性格認証の結果","専門医が設計・監修した心理評価によるスコアです。6ヶ月ごとに更新されます。"],
- rows:[["オンライン心理評価（専門医設計・監修）","完了"],["身分証・独身証明","完了"]],
+ rows:[["オンライン心理評価（専門医設計・監修）","完了"],["本人確認 — オフラインイベント参加時に実施","イベント時"]],
  memRow:["メンバーシップ","無料 ›"],
  typesRow:"恋愛タイプ図鑑",typesTitle:"恋愛タイプ図鑑",typesTabM:"男性8タイプ",typesTabF:"女性7タイプ",comboLabel:"詳しい組み合わせ — サブタイプを選択",
  typesNote:"タイプはMPI検査で最も高かった傾向で決まり、プロフィール写真のバッジとして表示されます。",
  logout:"ログアウト",changePhoto:"📷 写真を変更",
  previewRow:"自分のカードをプレビュー",previewNote:"🇰🇷 相手会員の画面にはこう見えます",close:"閉じる",
  tiers:`<div class="freenote">🌸 女性会員はすべての機能を無料でご利用いただけます。</div>
- <div class="tier-card hot"><div class="tn">安心・安全への取り組み</div><ul><li>専門医が設計・監修した性格評価を男女全会員が通過</li><li>全会員の独身証明書を確認</li><li>24時間の通報・ブロック対応</li></ul></div>`,
+ <div class="tier-card hot"><div class="tn">安心・安全への取り組み</div><ul><li>専門医が設計・監修した性格評価を男女全会員が実施</li><li>オフラインイベント参加者は全員本人確認</li><li>24時間の通報・ブロック対応</li></ul></div>`,
  events:[
   {d1:"7/18",d2:"土 19:00",t:"日韓ボードゲームナイト 🎲",desc:"通訳ホスト進行 · チーム戦ゲーム4種",city:"ソウル 聖水",m:"男 8/10 · 女 9/10",cond:"ソーシャル 75+",price:"女性 無料（渡航別）",hot:true},
   {d1:"8/1",d2:"土 18:00",t:"K-フード料理教室 🍳",desc:"2人1組の料理ミッション後、試食パーティー",city:"東京 渋谷",m:"男 6/8 · 女 8/8",cond:"ソーシャル 70+",price:"女性 無料"},
@@ -820,7 +820,7 @@ async function doAuth(mode){
 function pickVer(){
   ONBFN=pickVer;
   const t=T();
-  $('ob').innerHTML=`<div class="step">STEP 1 / 5</div><h2>${t.pickTitle}</h2>
+  $('ob').innerHTML=`<div class="step">STEP 1 / 4</div><h2>${t.pickTitle}</h2>
   <div class="obody" style="padding-top:12px;">
     <button class="verbtn" onclick="setGN('m','kr')"><span class="ic">🤵</span><span><b>🇰🇷 ${t.pickKM}</b><span>MPI-M · 74</span></span></button>
     <button class="verbtn" onclick="setGN('f','jp')"><span class="ic">👰</span><span><b>🇯🇵 ${t.pickJF}</b><span>MPI-F · 66</span></span></button>
@@ -849,7 +849,7 @@ function profileStep(){
   ONBFN=profileStep;
   const t=T();
   $('ob').innerHTML=`<div class="prog"><div class="bar" style="width:18%"></div></div>
-  <div class="step">STEP 2 / 5</div><h2>${t.profTitle}</h2><div class="desc">${t.profDesc}</div>
+  <div class="step">STEP 2 / 4</div><h2>${t.profTitle}</h2><div class="desc">${t.profDesc}</div>
   <div class="obody">
     <div class="photopick" id="ppick" onclick="$('pfile').click()">📷</div>
     <input type="file" id="pfile" accept="image/*" style="display:none" onchange="pickPhoto(this)">
@@ -958,7 +958,7 @@ async function saveProfile(){
       if(error)throw error;
       MYPROF=payload;
     }else{MYPROF={nickname:nick,age,region,bio,photo_url:null,video_url:null};}
-    upDocs=new Set();docStep();
+    mpiIntro();
   }catch(e){err.textContent=e.message;$('p-next').disabled=false;$('p-next').textContent=t.next;}
 }
 function docStep(){
@@ -976,8 +976,8 @@ function mpiIntro(){
   ONBFN=mpiIntro;
   const t=T();
   let gs=null;try{const g=JSON.parse(localStorage.getItem('musubi_guest'));if(g&&g.VER===VER&&(!g.NAT||g.NAT===NAT)&&g.RESULT)gs=g;}catch(e){}
-  $('ob').innerHTML=`<div class="prog"><div class="bar" style="width:45%"></div></div>
-  <div class="step">STEP 4 / 5</div><h2>${t.mpiTitle}</h2><div class="desc">${t.mpiDesc}</div>
+  $('ob').innerHTML=`<div class="prog"><div class="bar" style="width:50%"></div></div>
+  <div class="step">STEP 3 / 4</div><h2>${t.mpiTitle}</h2><div class="desc">${t.mpiDesc}</div>
   <div class="obody"><div class="drcard"><span class="em">🩺</span><span><b>${t.ivCard}</b><span>MPI v0.1 — ${VER==='m'?'74':'66'}${LANG==='kr'?'문항':'問'}</span></span></div></div>
   <div class="ofoot">${gs?`<button class="ghostbtn" style="border-color:var(--gold);color:var(--gold);margin-bottom:10px;" onclick="useGuestResult()">${t.guestUse}</button>`:''}<button class="goldbtn" onclick="startTest()">${t.mpiStart}</button></div>`;
 }
@@ -1054,7 +1054,7 @@ function resultScreen(){
   const[cls,ti,de]=vmap[r.verdict];
   const ok=r.verdict==="pass"||r.verdict==="hold";
   $('ob').innerHTML=`${GUEST?`<div class="step">FREE TEST</div>`:`<div class="prog"><div class="bar" style="width:88%"></div></div>
-  <div class="step">STEP 5 / 5</div>`}<h2>${t.resTitle}</h2>
+  <div class="step">STEP 4 / 4</div>`}<h2>${t.resTitle}</h2>
   <div class="obody">
   <div class="verdict ${cls}">${ti}<small>${de}</small></div>
   ${typeCard(r)}
