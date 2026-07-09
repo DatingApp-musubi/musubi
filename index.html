@@ -323,6 +323,14 @@
     <div class="tiers" id="y-body"></div>
   </div>
 
+  <div class="screen full" id="scr-edit">
+    <div class="chathead" style="border-bottom:none;">
+      <div class="back" onclick="showScreen('scr-my')">‹</div>
+      <div class="who"><b id="ed-title"></b></div>
+    </div>
+    <div class="tiers" id="ed-body"></div>
+  </div>
+
   <div class="prevov" id="prevov">
     <div class="prevnote" id="prevnote"></div>
     <div id="prevcard"></div>
@@ -543,6 +551,7 @@ kr:{
  purposeL:"무스비에서 찾는 것",purposes:[["serious","진지한 연애"],["friend","가볍게 친구부터"],["local","동네 친구"],["lang","언어 교환"],["hobby","취미 메이트"]],
  interestsL:"관심사 (최대 5개)",interests:[["board","보드게임"],["karaoke","노래방"],["food","맛집 탐방"],["travel","여행"],["surf","서핑/바다"],["game","게임"],["kpop","K-POP/J-POP"],["cook","요리"],["photo","사진"],["hike","등산/캠핑"],["anime","애니/만화"],["cafe","카페 투어"]],
  promptQ1:"🎯 한국/일본에서 꼭 해보고 싶은 것",promptQ2:"📍 우리 동네에서 같이 가고 싶은 곳",promptQ3:"🎤 노래방 18번 (애창곡)",promptReq:"프롬프트를 하나 이상 채워 주세요",
+ editRow:"프로필 수정",editTitle:"프로필 수정",saveBtn:"저장",savedMsg:"저장되었습니다.",
  iceT:"💬 이렇게 시작해 보세요",
  ice1:s=>`"${s}" 저도 완전 해보고 싶었어요! 같이 해요 🙌`,
  ice2:s=>`"${s}" 좋죠! 언제 한번 같이 가요 📍`,
@@ -663,6 +672,7 @@ jp:{
  purposeL:"MUSUBIで探しているもの",purposes:[["serious","真剣な恋愛"],["friend","まずは気軽に友達から"],["local","近所の友達"],["lang","言語交換"],["hobby","趣味仲間"]],
  interestsL:"興味・関心（最大5つ）",interests:[["board","ボードゲーム"],["karaoke","カラオケ"],["food","グルメ巡り"],["travel","旅行"],["surf","サーフィン/海"],["game","ゲーム"],["kpop","K-POP/J-POP"],["cook","料理"],["photo","写真"],["hike","登山/キャンプ"],["anime","アニメ/マンガ"],["cafe","カフェ巡り"]],
  promptQ1:"🎯 韓国/日本でぜひやってみたいこと",promptQ2:"📍 私の街で一緒に行きたい場所",promptQ3:"🎤 カラオケの十八番",promptReq:"プロンプトを1つ以上入力してください",
+ editRow:"プロフィール編集",editTitle:"プロフィール編集",saveBtn:"保存",savedMsg:"保存しました。",
  iceT:"💬 こんなふうに始めてみて",
  ice1:s=>`「${s}」私もすごくやってみたかったんです！一緒にやりましょう 🙌`,
  ice2:s=>`「${s}」いいですね！今度一緒に行きましょう 📍`,
@@ -1674,6 +1684,7 @@ function renderMy(){
       ${MYPROF?.video_url?`<span style="color:var(--gold);cursor:pointer;" onclick="playVideo('${MYPROF.video_url}')">${t.videoPlay}</span> · `:`<span style="color:var(--muted)">${t.videoNone}</span> · `}
       <span id="vchg" style="color:var(--gold);cursor:pointer;" onclick="$('myvfile').click()">${t.videoChange}</span></span></div>
     <input type="file" id="myvfile" accept="video/mp4,video/quicktime,video/webm" style="display:none" onchange="changeVideo(this)">
+    <div class="vrow link" onclick="editProfile()"><span class="lab">✏️ ${t.editRow}</span><span style="color:var(--gold);font-size:13px">›</span></div>
     <div class="vrow link" onclick="previewMe()"><span class="lab">👁 ${t.previewRow}</span><span style="color:var(--gold);font-size:13px">›</span></div>
     <div class="vrow link" onclick="openTypes()"><span class="lab">${t.typesRow}</span><span style="color:var(--gold);font-size:13px">8+7 ›</span></div>
     <div class="vrow link" onclick="showScreen('scr-tier')"><span class="lab">${t.memRow[0]}</span><span style="color:var(--gold);font-size:13px">${t.memRow[1]}</span></div>
@@ -1681,6 +1692,44 @@ function renderMy(){
     <div class="vrow link" onclick="window.open('terms.html','_blank')"><span class="lab">${t.termsLink}</span><span style="color:var(--gold);font-size:13px">›</span></div>
     <button class="ghostbtn" onclick="logout()" style="color:#8d7f6d;">${t.logout}</button>`;
   loadRecs('my');
+}
+/* ---------------- 프로필 수정 ---------------- */
+function editProfile(){
+  const t=T(),m=MYPROF||{},pr=m.prompts||{};
+  PSEL=m.purpose||null;ISEL=new Set(m.interests||[]);
+  $('ed-title').textContent='✏️ '+t.editTitle;
+  $('ed-body').innerHTML=`
+    <div class="field"><label>${t.nick}</label><input id="e-nick" maxlength="12" value="${esc(m.nickname||'')}"></div>
+    <div class="field"><label>${t.ageL}</label><input id="e-age" type="number" min="18" max="99" value="${m.age||''}"></div>
+    <div class="field"><label>${t.regionL}</label><input id="e-region" maxlength="20" value="${esc(m.region||'')}"></div>
+    <div class="field"><label>${t.purposeL}</label><div style="margin-top:7px;">${t.purposes.map(p=>`<span class="selchip ${PSEL===p[0]?'on':''}" data-p="${p[0]}" onclick="selPurpose(this)">${p[1]}</span>`).join('')}</div></div>
+    <div class="field"><label>${t.interestsL}</label><div style="margin-top:7px;">${t.interests.map(p=>`<span class="selchip ${ISEL.has(p[0])?'on':''}" data-i="${p[0]}" onclick="selInterest(this)">${p[1]}</span>`).join('')}</div></div>
+    <div class="field"><label>${t.promptQ1}</label><input id="e-p1" maxlength="40" value="${esc(pr.p1||'')}"></div>
+    <div class="field"><label>${t.promptQ2}</label><input id="e-p2" maxlength="40" value="${esc(pr.p2||'')}"></div>
+    <div class="field"><label>${t.promptQ3}</label><input id="e-p3" maxlength="40" value="${esc(pr.p3||'')}"></div>
+    <div class="err" id="e-err"></div>
+    <button class="goldbtn" onclick="saveEdit()" style="margin-top:8px;">${t.saveBtn}</button>
+    <div style="height:34px;"></div>`;
+  showScreen('scr-edit');
+}
+async function saveEdit(){
+  const t=T(),err=$('e-err');err.textContent='';
+  const nickname=$('e-nick').value.trim(),age=parseInt($('e-age').value),region=$('e-region').value.trim();
+  const p1=$('e-p1').value.trim(),p2=$('e-p2').value.trim(),p3=$('e-p3').value.trim();
+  const bio=p1||p2||p3;
+  if(!nickname||!age||age<18){err.textContent=LANG==='kr'?'닉네임과 나이(18세 이상)를 입력해 주세요.':'ニックネームと年齢（18歳以上）を入力してください。';return;}
+  if(!bio){err.textContent=t.promptReq;return;}
+  const upd={nickname,age,region,bio,prompts:{p1,p2,p3},purpose:PSEL,interests:[...ISEL]};
+  if(LIVE&&ME){
+    let {error}=await sb.from('profiles').update(upd).eq('id',ME.id);
+    if(error&&/prompts|purpose|interests/.test(error.message||'')){({error}=await sb.from('profiles').update({nickname,age,region,bio}).eq('id',ME.id));}
+    if(error){err.textContent=error.message;return;}
+  }
+  MYPROF=Object.assign(MYPROF||{},upd);
+  alert(t.savedMsg);
+  renderMy();
+  await loadCards(); // 정렬 점수(목적·관심사) 갱신
+  showScreen('scr-my');
 }
 async function changePhoto(inp){
   const f=inp.files[0];if(!f||!LIVE)return;
