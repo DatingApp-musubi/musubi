@@ -1674,17 +1674,18 @@ function renderMy(){
       <div><h3>${esc(MYPROF?.nickname||'')} · ${MYPROF?.age||''} · ${esc(MYPROF?.region||'')}</h3>
       <div class="tier">${t.myTier(vt)}</div>
       <div style="font-size:11px;color:var(--muted);margin-top:5px;cursor:pointer;" onclick="$('myfile').click()">${t.changePhoto}</div></div></div>
+    <div style="display:flex;gap:8px;margin:2px 0 14px;">
+      <button class="ghostbtn" style="flex:1;margin:0;border-color:var(--gold);color:var(--gold);font-weight:700;" onclick="editProfile()">✏️ ${t.editRow}</button>
+      <button class="ghostbtn" style="flex:1;margin:0;border-color:var(--gold);color:var(--gold);font-weight:700;" onclick="${MYPROF?.video_url?`playVideo('${MYPROF.video_url}')`:`$('myvfile').click()`}">${MYPROF?.video_url?'▶ '+t.videoRow:t.videoChange}</button>
+    </div>
+    ${MYPROF?.video_url?`<div style="text-align:right;margin:-8px 0 12px;"><span id="vchg" style="font-size:11.5px;color:var(--muted);cursor:pointer;" onclick="$('myvfile').click()">${t.videoChange} ›</span></div>`:`<span id="vchg" style="display:none;"></span>`}
+    <input type="file" id="myvfile" accept="video/mp4,video/quicktime,video/webm" style="display:none" onchange="changeVideo(this)">
     ${r?typeCard(r):''}
     ${r?`<button class="ghostbtn" style="border-color:var(--gold);color:var(--gold);margin:2px 0 10px;" onclick="shareCard()">${t.shareBtn}</button>`:''}
     ${r?compatSection(r,'my'):''}
     ${r?`<div class="vcard"><div class="vt">${t.myCard[0]} <span style="float:right">✦</span></div><div class="vs">${t.myCard[1]} (${r.date})</div>
       ${r.scores.map(s=>scoreBar(s,t)).join('')}</div>`:''}
     ${t.rows.map(x=>`<div class="vrow"><span class="lab">${x[0]}</span><span class="pill p-ok">${x[1]}</span></div>`).join('')}
-    <div class="vrow"><span class="lab">${t.videoRow}</span><span style="font-size:12.5px;">
-      ${MYPROF?.video_url?`<span style="color:var(--gold);cursor:pointer;" onclick="playVideo('${MYPROF.video_url}')">${t.videoPlay}</span> · `:`<span style="color:var(--muted)">${t.videoNone}</span> · `}
-      <span id="vchg" style="color:var(--gold);cursor:pointer;" onclick="$('myvfile').click()">${t.videoChange}</span></span></div>
-    <input type="file" id="myvfile" accept="video/mp4,video/quicktime,video/webm" style="display:none" onchange="changeVideo(this)">
-    <div class="vrow link" onclick="editProfile()"><span class="lab">✏️ ${t.editRow}</span><span style="color:var(--gold);font-size:13px">›</span></div>
     <div class="vrow link" onclick="previewMe()"><span class="lab">👁 ${t.previewRow}</span><span style="color:var(--gold);font-size:13px">›</span></div>
     <div class="vrow link" onclick="openTypes()"><span class="lab">${t.typesRow}</span><span style="color:var(--gold);font-size:13px">8+7 ›</span></div>
     <div class="vrow link" onclick="showScreen('scr-tier')"><span class="lab">${t.memRow[0]}</span><span style="color:var(--gold);font-size:13px">${t.memRow[1]}</span></div>
