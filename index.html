@@ -8,6 +8,7 @@
 <meta name="theme-color" content="#0d0b09">
 <title>MUSUBI 무스비 — 結び</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js"></script>
 <style>
   :root{--bg:#0d0b09;--surface:#171310;--surface2:#211b16;--gold:#c9a45c;--gold-light:#e6cf9a;
     --text:#f2ece1;--muted:#9c8f7d;--danger:#d99790;--ok:#8fc6a8;}
@@ -341,6 +342,11 @@
     <div id="repbody" style="width:100%;max-width:300px;"></div>
   </div>
 
+  <div class="matchov" id="shareov">
+    <img id="share-prev" alt="" style="width:132px;border-radius:14px;border:1px solid #3a3128;margin-bottom:16px;box-shadow:0 8px 30px rgba(0,0,0,.5);">
+    <div id="sharebody" style="width:100%;max-width:300px;"></div>
+  </div>
+
   <div class="tabbar" id="tabbar">
     <div class="tab on" data-s="scr-discover" onclick="go(this)"><svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.8-10-9.5C.5 8 2.5 4.5 6 4.5c2.2 0 3.8 1.2 6 3.6 2.2-2.4 3.8-3.6 6-3.6 3.5 0 5.5 3.5 4 7-2.5 4.7-10 9.5-10 9.5z"/></svg><span class="tl"></span></div>
     <div class="tab" data-s="scr-likes" onclick="go(this)"><svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.3 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8z"/></svg><span class="tl"></span></div>
@@ -357,6 +363,7 @@
    Supabase 대시보드 > Project Settings > API
    ============================================================ */
 const SUPABASE_URL = "https://zdcycboxpnswyojruwwf.supabase.co";
+const KAKAO_JS_KEY = ""; // 카카오 개발자 콘솔 > 앱 키 > JavaScript 키
 const SUPABASE_ANON_KEY = "sb_publishable_nXKa3nQWZhYGdwnksWYsrg_tcSsdIHK";
 
 const LIVE = !SUPABASE_URL.startsWith("YOUR");
@@ -534,6 +541,9 @@ kr:{
  videoCodec:"이 영상 형식(HEVC·고효율)은 브라우저에서 재생되지 않아요. 아이폰: 설정→카메라→형식→'높은 호환성'으로 바꾼 뒤 다시 촬영해 주세요.",
  videoConv:"🎬 영상 변환 중 ",videoConvFail:"영상 변환에 실패했습니다. 다른 영상으로 시도해 주세요.",videoRow:"소개 영상",videoNone:"없음",videoPlay:"▶ 재생",videoChange:"🎬 영상 올리기/변경",
  shareBtn:"📸 유형 카드 이미지 저장·공유",shareCTA:"나의 연애 유형 무료 진단",
+ shareKakao:"💬 카카오톡으로 공유",shareInsta:"📸 인스타그램 스토리",shareLine:"🟢 LINE으로 공유",shareSave:"💾 이미지 저장",
+ shareMsg:n=>`나의 연애 유형은 "${n}"! 무스비에서 무료로 검사해 보세요 💘`,shareGo:"나도 검사하기",
+ instaGuide:"카드 이미지를 저장했어요! 인스타그램 스토리에 올려보세요.",shareKakaoNo:"카카오톡 공유 준비 중입니다. 이미지 저장 후 직접 공유해 주세요.",
  guestBtn:"🔮 가입 없이 성격검사 해보기 (무료)",guestJoin:"💘 나와 잘 맞는 상대 보러 가기 — 회원가입",guestUse:"방금 한 검사 결과 그대로 사용하기",guestNote:"결과는 저장되지 않아요. 가입하면 검사 결과가 그대로 이어집니다.",
  reportTitle:"신고·차단",reportReasons:["부적절한 사진·프로필","불쾌한 메시지·언행","사기·스팸 의심"],reportDone:"신고가 접수되었습니다. 운영진이 24시간 내 확인 후 조치합니다.",blockBtn:"🚫 이 회원 차단하기",blockDone:"차단했습니다. 서로에게 더 이상 표시되지 않습니다.",cancel:"닫기",
  privacyLink:"개인정보처리방침",termsLink:"이용약관",
@@ -642,6 +652,9 @@ jp:{
  videoCodec:"この動画形式（HEVC・高効率）はブラウザで再生できません。iPhone: 設定→カメラ→フォーマット→「互換性優先」に変更して撮り直してください。",
  videoConv:"🎬 動画変換中 ",videoConvFail:"動画の変換に失敗しました。別の動画でお試しください。",videoRow:"自己紹介動画",videoNone:"なし",videoPlay:"▶ 再生",videoChange:"🎬 動画をアップ/変更",
  shareBtn:"📸 タイプカードを保存・シェア",shareCTA:"あなたの恋愛タイプを無料診断",
+ shareKakao:"💬 カカオトークでシェア",shareInsta:"📸 インスタのストーリーズ",shareLine:"🟢 LINEでシェア",shareSave:"💾 画像を保存",
+ shareMsg:n=>`私の恋愛タイプは「${n}」！MUSUBIで無料診断してみて 💘`,shareGo:"私も診断する",
+ instaGuide:"カード画像を保存しました！インスタのストーリーズに投稿してみてください。",shareKakaoNo:"カカオトークシェアは準備中です。画像を保存して直接シェアしてください。",
  guestBtn:"🔮 登録なしで性格診断を試す（無料）",guestJoin:"💘 相性のいい相手を見る — 新規登録",guestUse:"先ほどの診断結果をそのまま使う",guestNote:"結果は保存されません。登録すると診断結果がそのまま引き継がれます。",
  reportTitle:"通報・ブロック",reportReasons:["不適切な写真・プロフィール","不快なメッセージ・言動","詐欺・スパムの疑い"],reportDone:"通報を受け付けました。運営が24時間以内に確認し対応します。",blockBtn:"🚫 この会員をブロック",blockDone:"ブロックしました。互いに表示されなくなります。",cancel:"閉じる",
  privacyLink:"プライバシーポリシー",termsLink:"利用規約",
@@ -1222,11 +1235,69 @@ async function shareCard(){
   x.fillStyle='#c9a45c';x.font='700 33px sans-serif';x.fillText('datingapp-musubi.pages.dev',W/2,H-112);
   const blob=await new Promise(res=>c.toBlob(res,'image/png'));
   if(!blob)return;
-  const file=new File([blob],'musubi_type.png',{type:'image/png'});
-  if(navigator.canShare&&navigator.canShare({files:[file]})){
-    try{await navigator.share({files:[file]});return;}catch(e){if(e&&e.name==='AbortError')return;}
+  CARDBLOB=blob;
+  openShareSheet(c);
+}
+/* ---------------- 공유 시트 (카카오톡 · 인스타그램 · LINE · 저장) ---------------- */
+const APPURL='https://datingapp-musubi.pages.dev';
+let CARDBLOB=null;
+function openShareSheet(canvas){
+  const t=T();
+  $('share-prev').src=canvas.toDataURL('image/png');
+  $('sharebody').innerHTML=`
+    <button class="repbtn" style="background:#FEE500;color:#191919;border-color:#FEE500;font-weight:700;" onclick="shareKakao()">${t.shareKakao}</button>
+    <button class="repbtn" style="background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);color:#fff;border:none;font-weight:700;" onclick="shareInsta()">${t.shareInsta}</button>
+    <button class="repbtn" style="background:#06C755;color:#fff;border-color:#06C755;font-weight:700;" onclick="shareLine()">${t.shareLine}</button>
+    <button class="repbtn" onclick="dlCard()">${t.shareSave}</button>
+    <button class="repbtn" style="border:none;background:none;color:#8d7f6d;" onclick="$('shareov').classList.remove('show')">${t.cancel}</button>`;
+  $('shareov').classList.add('show');
+}
+function dlCard(){
+  if(!CARDBLOB)return;
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(CARDBLOB);a.download='musubi_type.png';
+  document.body.appendChild(a);a.click();a.remove();
+}
+function myTypeName(){
+  const r=RESULT;if(!r||!r.scores)return'';
+  const s=[...r.scores].sort((a,b)=>b.mean-a.mean);
+  const ty=TYPES[VER]&&TYPES[VER][s[0].c];
+  return ty?ty.n[LANG]:'';
+}
+async function shareKakao(){
+  const t=T();
+  if(!window.Kakao||!KAKAO_JS_KEY){alert(t.shareKakaoNo);return;}
+  try{if(!Kakao.isInitialized())Kakao.init(KAKAO_JS_KEY);}catch(e){}
+  let imgUrl=null;
+  if(LIVE&&ME&&CARDBLOB){
+    try{
+      const path=`${ME.id}/typecard.png`;
+      await sb.storage.from('photos').upload(path,CARDBLOB,{upsert:true,contentType:'image/png'});
+      imgUrl=sb.storage.from('photos').getPublicUrl(path).data.publicUrl+'?v='+Date.now();
+    }catch(e){}
   }
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='musubi_type.png';document.body.appendChild(a);a.click();a.remove();
+  const link={mobileWebUrl:APPURL,webUrl:APPURL};
+  try{
+    if(imgUrl){
+      Kakao.Share.sendDefault({objectType:'feed',
+        content:{title:t.shareMsg(myTypeName()),description:'MUSUBI 結び',imageUrl:imgUrl,imageWidth:540,imageHeight:960,link},
+        buttons:[{title:t.shareGo,link}]});
+    }else{
+      Kakao.Share.sendDefault({objectType:'text',text:t.shareMsg(myTypeName()),link,buttonTitle:t.shareGo});
+    }
+  }catch(e){alert(e&&e.message||e);}
+}
+function shareInsta(){
+  dlCard();
+  alert(T().instaGuide);
+  const start=Date.now();
+  location.href='instagram://story-camera';
+  setTimeout(()=>{if(Date.now()-start<2200&&document.hasFocus())window.open('https://www.instagram.com/','_blank');},1500);
+}
+function shareLine(){
+  const t=T();
+  const txt=encodeURIComponent(t.shareMsg(myTypeName())+'\n'+APPURL);
+  window.open('https://line.me/R/share?text='+txt,'_blank');
 }
 /* ---------------- 조합(주×서브) 카드 생성 ---------------- */
 const SUBMOD={
