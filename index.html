@@ -1240,9 +1240,18 @@ async function shareCard(){
 }
 /* ---------------- 공유 시트 (카카오톡 · 인스타그램 · LINE · 저장) ---------------- */
 const APPURL='https://datingapp-musubi.pages.dev';
-let CARDBLOB=null;
+let CARDBLOB=null,CARDIMGURL=null;
 function openShareSheet(canvas){
   const t=T();
+  // 카카오 공유용 이미지 미리 업로드 (클릭 시 팝업 차단 방지)
+  CARDIMGURL=null;
+  if(LIVE&&ME&&CARDBLOB){
+    (async()=>{try{
+      const path=`${ME.id}/typecard.png`;
+      await sb.storage.from('photos').upload(path,CARDBLOB,{upsert:true,contentType:'image/png'});
+      CARDIMGURL=sb.storage.from('photos').getPublicUrl(path).data.publicUrl+'?v='+Date.now();
+    }catch(e){}})();
+  }
   $('share-prev').src=canvas.toDataURL('image/png');
   $('sharebody').innerHTML=`
     <button class="repbtn" style="background:#FEE500;color:#191919;border-color:#FEE500;font-weight:700;" onclick="shareKakao()">${t.shareKakao}</button>
@@ -1264,23 +1273,15 @@ function myTypeName(){
   const ty=TYPES[VER]&&TYPES[VER][s[0].c];
   return ty?ty.n[LANG]:'';
 }
-async function shareKakao(){
+function shareKakao(){ // 동기 실행 — 클릭 제스처 유지로 팝업 차단 방지
   const t=T();
   if(!window.Kakao||!KAKAO_JS_KEY){alert(t.shareKakaoNo);return;}
   try{if(!Kakao.isInitialized())Kakao.init(KAKAO_JS_KEY);}catch(e){}
-  let imgUrl=null;
-  if(LIVE&&ME&&CARDBLOB){
-    try{
-      const path=`${ME.id}/typecard.png`;
-      await sb.storage.from('photos').upload(path,CARDBLOB,{upsert:true,contentType:'image/png'});
-      imgUrl=sb.storage.from('photos').getPublicUrl(path).data.publicUrl+'?v='+Date.now();
-    }catch(e){}
-  }
   const link={mobileWebUrl:APPURL,webUrl:APPURL};
   try{
-    if(imgUrl){
+    if(CARDIMGURL){
       Kakao.Share.sendDefault({objectType:'feed',
-        content:{title:t.shareMsg(myTypeName()),description:'MUSUBI 結び',imageUrl:imgUrl,imageWidth:540,imageHeight:960,link},
+        content:{title:t.shareMsg(myTypeName()),description:'MUSUBI 結び',imageUrl:CARDIMGURL,imageWidth:540,imageHeight:960,link},
         buttons:[{title:t.shareGo,link}]});
     }else{
       Kakao.Share.sendDefault({objectType:'text',text:t.shareMsg(myTypeName()),link,buttonTitle:t.shareGo});
