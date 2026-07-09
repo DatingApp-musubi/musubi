@@ -183,6 +183,9 @@
   .matchov p{color:var(--muted);font-size:13.5px;line-height:1.7;margin-bottom:26px;}
   .matchov .goldbtn{width:auto;padding:14px 36px;border-radius:26px;}
   .repbtn{width:100%;padding:13px;border-radius:12px;border:1px solid #3a3128;background:var(--surface2);color:var(--text);font-size:13.5px;cursor:pointer;margin-bottom:8px;font-family:inherit;}
+  .selchip{display:inline-block;padding:6px 11px;border-radius:14px;border:1px solid #3a3128;background:var(--surface2);color:var(--muted);font-size:11.5px;cursor:pointer;margin:0 6px 6px 0;user-select:none;}
+  .selchip.on{background:var(--gold);color:#171008;border-color:var(--gold);font-weight:700;}
+  .icechip{padding:10px 14px;border:1px dashed var(--gold);border-radius:16px;color:var(--gold-light);font-size:12.5px;margin-bottom:8px;cursor:pointer;background:rgba(201,164,92,.07);line-height:1.5;}
   .repbtn.danger{border-color:rgba(176,86,79,.55);color:var(--danger);}
   .pinfo .rep{margin-left:10px;color:#7d7060;cursor:pointer;font-size:14px;}
   .secthead{padding:2px 20px 12px;font-size:13px;color:var(--muted);flex-shrink:0;}
@@ -523,7 +526,7 @@ const COMPAT={
 const L={
 kr:{
  likert:["전혀 그렇지 않다","그렇지 않은 편이다","보통이다","그런 편이다","매우 그렇다"],
- tag:"한국과 일본, 놀면서 가까워지는 곳.<br>보드게임 · 노래방 · 요리 모임 —<br><b style='color:var(--gold-light)'>같이 놀다 보면</b> 자연스럽게 이어지는 인연",
+ tag:"한국과 일본, 놀면서 가까워지는 곳.<br>보드게임 · 노래방 · 요리 모임 —<br><b style='color:var(--gold-light)'>같이 놀다 보면</b> 자연스럽게 이어지는 인연<br><span style='font-size:11.5px;color:#8d7f6d'>우리의 목표는, 앱 밖에서 함께 노는 것.</span>",
  login:"로그인",signup:"회원가입",email:"이메일",pw:"비밀번호 (6자 이상)",
  brandSub:"무스비 · 인연을 맺다",googleBtn:"Google로 계속하기",kakaoBtn:"💬 카카오로 계속하기",orMail:"또는 이메일로",
  errCred:"이메일과 6자 이상 비밀번호를 입력해 주세요.",oauthErr:" 로그인 설정이 아직 완료되지 않았습니다.",
@@ -537,6 +540,15 @@ kr:{
  pickTitle:"가입 유형을 선택해 주세요",
  profTitle:"프로필을 만들어 주세요",profDesc:"사진과 닉네임은 상대 회원에게 공개됩니다.",
  nick:"닉네임",ageL:"나이",regionL:"지역 (예: 서울)",bioL:"한 줄 소개",photoReq:"사진을 선택해 주세요",
+ purposeL:"무스비에서 찾는 것",purposes:[["serious","진지한 연애"],["friend","가볍게 친구부터"],["local","동네 친구"],["lang","언어 교환"],["hobby","취미 메이트"]],
+ interestsL:"관심사 (최대 5개)",interests:[["board","보드게임"],["karaoke","노래방"],["food","맛집 탐방"],["travel","여행"],["surf","서핑/바다"],["game","게임"],["kpop","K-POP/J-POP"],["cook","요리"],["photo","사진"],["hike","등산/캠핑"],["anime","애니/만화"],["cafe","카페 투어"]],
+ promptQ1:"🎯 한국/일본에서 꼭 해보고 싶은 것",promptQ2:"📍 우리 동네에서 같이 가고 싶은 곳",promptQ3:"🎤 노래방 18번 (애창곡)",promptReq:"프롬프트를 하나 이상 채워 주세요",
+ iceT:"💬 이렇게 시작해 보세요",
+ ice1:s=>`"${s}" 저도 완전 해보고 싶었어요! 같이 해요 🙌`,
+ ice2:s=>`"${s}" 좋죠! 언제 한번 같이 가요 📍`,
+ ice3:s=>`18번이 "${s}"라면서요? 다음에 꼭 듣고 싶어요 🎤`,
+ iceGen:["우리 유형 궁합이 꽤 잘 맞는대요 💞 프로필 보고 반가웠어요!","이번 주말엔 뭐 하고 놀아요? 🎲"],
+ liteNote:"⚡ 3분 간이 검사(MPI-Lite) 결과예요. 가입하면 정식 검사로 더 정확한 유형과 점수를 확인할 수 있어요.",
  videoBtn:"🎬 10초 소개 영상 올리기 (선택)",videoSet:"🎬 영상 준비 완료 ✓",videoLong:"영상은 10초 이하만 가능합니다.",videoBig:"영상 파일이 너무 큽니다 (40MB 이하).",
  videoCodec:"이 영상 형식(HEVC·고효율)은 브라우저에서 재생되지 않아요. 아이폰: 설정→카메라→형식→'높은 호환성'으로 바꾼 뒤 다시 촬영해 주세요.",
  videoConv:"🎬 영상 변환 중 ",videoConvFail:"영상 변환에 실패했습니다. 다른 영상으로 시도해 주세요.",videoRow:"소개 영상",videoNone:"없음",videoPlay:"▶ 재생",videoChange:"🎬 영상 올리기/변경",
@@ -634,7 +646,7 @@ kr:{
 },
 jp:{
  likert:["全く違う","違う方だ","どちらとも言えない","そう思う方だ","とてもそう思う"],
- tag:"韓国と日本、遊びながら仲良くなる場所。<br>ボードゲーム・カラオケ・料理会 —<br><b style='color:var(--gold-light)'>一緒に遊ぶうちに</b>自然につながるご縁",
+ tag:"韓国と日本、遊びながら仲良くなる場所。<br>ボードゲーム・カラオケ・料理会 —<br><b style='color:var(--gold-light)'>一緒に遊ぶうちに</b>自然につながるご縁<br><span style='font-size:11.5px;color:#8d7f6d'>私たちのゴールは、アプリの外で一緒に遊ぶこと。</span>",
  login:"ログイン",signup:"新規登録",email:"メールアドレス",pw:"パスワード（6文字以上）",
  brandSub:"結び・むすび",googleBtn:"Googleで続ける",kakaoBtn:"💬 カカオで続ける",orMail:"またはメールで",
  errCred:"メールアドレスと6文字以上のパスワードを入力してください。",oauthErr:" ログイン設定がまだ完了していません。",
@@ -648,6 +660,15 @@ jp:{
  pickTitle:"会員タイプを選択してください",
  profTitle:"プロフィールを作成してください",profDesc:"写真とニックネームは相手会員に公開されます。",
  nick:"ニックネーム",ageL:"年齢",regionL:"地域（例: 東京）",bioL:"ひとこと紹介",photoReq:"写真を選択してください",
+ purposeL:"MUSUBIで探しているもの",purposes:[["serious","真剣な恋愛"],["friend","まずは気軽に友達から"],["local","近所の友達"],["lang","言語交換"],["hobby","趣味仲間"]],
+ interestsL:"興味・関心（最大5つ）",interests:[["board","ボードゲーム"],["karaoke","カラオケ"],["food","グルメ巡り"],["travel","旅行"],["surf","サーフィン/海"],["game","ゲーム"],["kpop","K-POP/J-POP"],["cook","料理"],["photo","写真"],["hike","登山/キャンプ"],["anime","アニメ/マンガ"],["cafe","カフェ巡り"]],
+ promptQ1:"🎯 韓国/日本でぜひやってみたいこと",promptQ2:"📍 私の街で一緒に行きたい場所",promptQ3:"🎤 カラオケの十八番",promptReq:"プロンプトを1つ以上入力してください",
+ iceT:"💬 こんなふうに始めてみて",
+ ice1:s=>`「${s}」私もすごくやってみたかったんです！一緒にやりましょう 🙌`,
+ ice2:s=>`「${s}」いいですね！今度一緒に行きましょう 📍`,
+ ice3:s=>`十八番が「${s}」なんですね！今度ぜひ聴きたいです 🎤`,
+ iceGen:["私たち、タイプの相性がかなりいいみたいですよ 💞 プロフィール見て嬉しくなりました！","今週末は何して遊びますか？ 🎲"],
+ liteNote:"⚡ 3分の簡易診断（MPI-Lite）の結果です。登録すると正式検査でより正確なタイプとスコアを確認できます。",
  videoBtn:"🎬 10秒自己紹介動画（任意）",videoSet:"🎬 動画準備完了 ✓",videoLong:"動画は10秒以内にしてください。",videoBig:"動画ファイルが大きすぎます（40MB以下）。",
  videoCodec:"この動画形式（HEVC・高効率）はブラウザで再生できません。iPhone: 設定→カメラ→フォーマット→「互換性優先」に変更して撮り直してください。",
  videoConv:"🎬 動画変換中 ",videoConvFail:"動画の変換に失敗しました。別の動画でお試しください。",videoRow:"自己紹介動画",videoNone:"なし",videoPlay:"▶ 再生",videoChange:"🎬 動画をアップ/変更",
@@ -746,7 +767,7 @@ jp:{
 let ME=null, MYPROF=null, VER=null, LANG='kr';
 let SEQ=[], ANS=[], pos=0, upDocs=new Set(), slotSel=-1, RESULT=null;
 let CARDS=[], idx=0, ROOM=null, photoBlob=null, videoBlob=null, rtChannel=null;
-let GUEST=false, BLOCKED=new Set(), NAT='kr', EVREGS=new Set();
+let GUEST=false, BLOCKED=new Set(), NAT='kr', EVREGS=new Set(), PSEL=null, ISEL=new Set();
 const $=id=>document.getElementById(id);
 const T=()=>L[LANG];
 /* ---------------- 언어 전환 ---------------- */
@@ -859,7 +880,9 @@ function pickVer(){
     <button class="verbtn" onclick="setGN('f','kr')"><span class="ic">👰</span><span><b>🇰🇷 ${t.pickKF}</b><span>MPI-F · 66</span></span></button>
   </div>`;
 }
-function setGN(g,n){VER=g;NAT=n;if(!LANGSET){LANG=n;updateLangSw();}photoBlob=null;videoBlob=null;profileStep();}
+function setGN(g,n){VER=g;NAT=n;if(!LANGSET){LANG=n;updateLangSw();}photoBlob=null;videoBlob=null;PSEL=null;ISEL=new Set();profileStep();}
+function selPurpose(el){PSEL=el.dataset.p;document.querySelectorAll('[data-p]').forEach(x=>x.classList.toggle('on',x.dataset.p===PSEL));}
+function selInterest(el){const id=el.dataset.i;if(ISEL.has(id)){ISEL.delete(id);el.classList.remove('on');}else{if(ISEL.size>=5)return;ISEL.add(id);el.classList.add('on');}}
 /* ---------------- 게스트(비회원) 무료 검사 ---------------- */
 function guestStart(){GUEST=true;guestPick();}
 function guestPick(){
@@ -867,10 +890,10 @@ function guestPick(){
   const t=T();
   $('ob').innerHTML=`<div class="step">FREE TEST</div><h2>${t.pickTitle}</h2>
   <div class="obody" style="padding-top:12px;">
-    <button class="verbtn" onclick="guestSetGN('m','kr')"><span class="ic">🤵</span><span><b>🇰🇷 ${t.pickKM}</b><span>MPI-M · 74</span></span></button>
-    <button class="verbtn" onclick="guestSetGN('f','jp')"><span class="ic">👰</span><span><b>🇯🇵 ${t.pickJF}</b><span>MPI-F · 66</span></span></button>
-    <button class="verbtn" onclick="guestSetGN('m','jp')"><span class="ic">🤵</span><span><b>🇯🇵 ${t.pickJM}</b><span>MPI-M · 74</span></span></button>
-    <button class="verbtn" onclick="guestSetGN('f','kr')"><span class="ic">👰</span><span><b>🇰🇷 ${t.pickKF}</b><span>MPI-F · 66</span></span></button>
+    <button class="verbtn" onclick="guestSetGN('m','kr')"><span class="ic">🤵</span><span><b>🇰🇷 ${t.pickKM}</b><span>MPI-Lite · 16 · ⚡3${LANG==='kr'?'분':'分'}</span></span></button>
+    <button class="verbtn" onclick="guestSetGN('f','jp')"><span class="ic">👰</span><span><b>🇯🇵 ${t.pickJF}</b><span>MPI-Lite · 14 · ⚡3${LANG==='kr'?'분':'分'}</span></span></button>
+    <button class="verbtn" onclick="guestSetGN('m','jp')"><span class="ic">🤵</span><span><b>🇯🇵 ${t.pickJM}</b><span>MPI-Lite · 16 · ⚡3${LANG==='kr'?'분':'分'}</span></span></button>
+    <button class="verbtn" onclick="guestSetGN('f','kr')"><span class="ic">👰</span><span><b>🇰🇷 ${t.pickKF}</b><span>MPI-Lite · 14 · ⚡3${LANG==='kr'?'분':'分'}</span></span></button>
     <div style="font-size:11.5px;color:var(--muted);line-height:1.6;padding:4px;">${t.guestNote}</div>
   </div>
   <div class="ofoot"><button class="backlink" onclick="GUEST=false;splash(${LIVE?'false':'true'})">‹</button></div>`;
@@ -889,7 +912,11 @@ function profileStep(){
     <div class="field"><label>${t.nick}</label><input id="p-nick" maxlength="12"></div>
     <div class="field"><label>${t.ageL}</label><input id="p-age" type="number" min="18" max="99"></div>
     <div class="field"><label>${t.regionL}</label><input id="p-region" maxlength="20"></div>
-    <div class="field"><label>${t.bioL}</label><input id="p-bio" maxlength="60"></div>
+    <div class="field"><label>${t.purposeL}</label><div style="margin-top:7px;">${t.purposes.map(p=>`<span class="selchip ${PSEL===p[0]?'on':''}" data-p="${p[0]}" onclick="selPurpose(this)">${p[1]}</span>`).join('')}</div></div>
+    <div class="field"><label>${t.interestsL}</label><div style="margin-top:7px;">${t.interests.map(p=>`<span class="selchip ${ISEL.has(p[0])?'on':''}" data-i="${p[0]}" onclick="selInterest(this)">${p[1]}</span>`).join('')}</div></div>
+    <div class="field"><label>${t.promptQ1}</label><input id="p-p1" maxlength="40"></div>
+    <div class="field"><label>${t.promptQ2}</label><input id="p-p2" maxlength="40"></div>
+    <div class="field"><label>${t.promptQ3}</label><input id="p-p3" maxlength="40"></div>
     <div class="err" id="p-err"></div>
   </div>
   <div class="ofoot"><button class="goldbtn" id="p-next" onclick="saveProfile()">${t.next}</button></div>`;
@@ -967,8 +994,11 @@ async function uploadVideo(){
 }
 async function saveProfile(){
   const t=T(),err=$('p-err');err.textContent='';
-  const nick=$('p-nick').value.trim(),age=parseInt($('p-age').value),region=$('p-region').value.trim(),bio=$('p-bio').value.trim();
+  const nick=$('p-nick').value.trim(),age=parseInt($('p-age').value),region=$('p-region').value.trim();
+  const p1=$('p-p1').value.trim(),p2=$('p-p2').value.trim(),p3=$('p-p3').value.trim();
+  const bio=p1||p2||p3;
   if(!nick||!age||age<18){err.textContent=LANG==='kr'?'닉네임과 나이(18세 이상)를 입력해 주세요.':'ニックネームと年齢（18歳以上）を入力してください。';return;}
+  if(!bio){err.textContent=t.promptReq;return;}
   if(LIVE&&!photoBlob&&!(MYPROF&&MYPROF.photo_url)){err.textContent=t.photoReq;return;}
   $('p-next').disabled=true;$('p-next').textContent=t.saving;
   try{
@@ -982,8 +1012,10 @@ async function saveProfile(){
     let video_url=MYPROF?.video_url||null;
     if(LIVE&&videoBlob){try{video_url=await uploadVideo();}catch(e){console.warn('video upload:',e.message);}}
     if(LIVE){
-      let payload={id:ME.id,gender:VER,nat:NAT,nickname:nick,age,region,bio,photo_url,lang:LANG,video_url};
+      let payload={id:ME.id,gender:VER,nat:NAT,nickname:nick,age,region,bio,photo_url,lang:LANG,video_url,
+        prompts:{p1,p2,p3},purpose:PSEL,interests:[...ISEL]};
       let {error}=await sb.from('profiles').upsert(payload);
+      if(error&&/prompts|purpose|interests/.test(error.message||'')){delete payload.prompts;delete payload.purpose;delete payload.interests;({error}=await sb.from('profiles').upsert(payload));}
       if(error&&/nat/.test(error.message||'')){delete payload.nat;({error}=await sb.from('profiles').upsert(payload));}
       if(error&&/video_url/.test(error.message||'')){delete payload.video_url;({error}=await sb.from('profiles').upsert(payload));}
       if(error)throw error;
@@ -1006,7 +1038,7 @@ function docStep(){
 function mpiIntro(){
   ONBFN=mpiIntro;
   const t=T();
-  let gs=null;try{const g=JSON.parse(localStorage.getItem('musubi_guest'));if(g&&g.VER===VER&&(!g.NAT||g.NAT===NAT)&&g.RESULT)gs=g;}catch(e){}
+  let gs=null;try{const g=JSON.parse(localStorage.getItem('musubi_guest'));if(g&&g.VER===VER&&(!g.NAT||g.NAT===NAT)&&g.RESULT&&!g.RESULT.lite)gs=g;}catch(e){}
   $('ob').innerHTML=`<div class="prog"><div class="bar" style="width:50%"></div></div>
   <div class="step">STEP 3 / 4</div><h2>${t.mpiTitle}</h2><div class="desc">${t.mpiDesc}</div>
   <div class="obody"><div class="drcard"><span class="em">🩺</span><span><b>${t.ivCard}</b><span>MPI v0.1 — ${VER==='m'?'74':'66'}${LANG==='kr'?'문항':'問'}</span></span></div></div>
@@ -1025,18 +1057,21 @@ async function useGuestResult(){
 }
 
 /* ---------------- MPI 검사/채점 ---------------- */
-function buildSeq(v){
+function buildSeq(v,lite){
   // 문항 언어 = 응시자의 모국어(국적 기준). 성별 척도와 무관하게 한국인은 한국어, 일본인은 일본어로 응시.
-  const sc=SCALES[v],lang=(NAT==='jp')?'jp':'kr',ti=lang==='kr'?0:1,seq=[];
-  for(let r=0;r<8;r++)for(let s=0;s<sc.length;s++)
+  // lite=true: MPI-Lite 간이판 (척도당 2문항, 타당도 문항 없음 — 비회원 유입용)
+  const sc=SCALES[v],lang=(NAT==='jp')?'jp':'kr',ti=lang==='kr'?0:1,seq=[],R=lite?2:8;
+  for(let r=0;r<R;r++)for(let s=0;s<sc.length;s++)
     seq.push({t:sc[s].it[r][ti],rev:sc[s].it[r][2],scale:sc[s].c,idx:r,kind:"c"});
-  SD[lang].forEach((t,k)=>seq.splice(9+k*10,0,{t,kind:"sd",idx:k}));
-  seq.splice(24,0,{t:INF[lang][0],kind:"inf",idx:0});
-  seq.splice(48,0,{t:INF[lang][1],kind:"inf",idx:1});
-  INC[v].forEach((o,k)=>seq.push({t:o.q[lang],kind:"inc",idx:k}));
+  if(!lite){
+    SD[lang].forEach((t,k)=>seq.splice(9+k*10,0,{t,kind:"sd",idx:k}));
+    seq.splice(24,0,{t:INF[lang][0],kind:"inf",idx:0});
+    seq.splice(48,0,{t:INF[lang][1],kind:"inf",idx:1});
+    INC[v].forEach((o,k)=>seq.push({t:o.q[lang],kind:"inc",idx:k}));
+  }
   return seq;
 }
-function startTest(){SEQ=buildSeq(VER);ANS=new Array(SEQ.length).fill(0);pos=0;renderQ();}
+function startTest(){SEQ=buildSeq(VER,GUEST);ANS=new Array(SEQ.length).fill(0);pos=0;renderQ();}
 function renderQ(){
   ONBFN=renderQ;
   const t=T(),q=SEQ[pos],pct=Math.round(pos/SEQ.length*100);
@@ -1060,7 +1095,7 @@ async function score(){
   });
   const sdHi=SEQ.filter((q,i)=>q.kind==="sd"&&ANS[i]>=4).length;
   const infHi=SEQ.filter((q,i)=>q.kind==="inf"&&ANS[i]>=4).length;
-  const incFlags=INC[VER].map((o,k)=>{
+  const incFlags=GUEST?[]:INC[VER].map((o,k)=>{
     const vIdx=SEQ.findIndex(q=>q.kind==="inc"&&q.idx===k);
     const refItem=SCALES[VER].find(s=>s.c===o.ref[0]).it[o.ref[1]];
     const refIdx=SEQ.findIndex(q=>q.kind==="c"&&q.scale===o.ref[0]&&q.idx===o.ref[1]);
@@ -1069,7 +1104,7 @@ async function score(){
     return Math.abs(vKeyed-refKeyed)>=3;
   });
   const verdict="pass"; // 파일럿 정책: 검사 완료 시 전원 통과 (타당도 지표는 연구용으로 기록만)
-  RESULT={scores,verdict,sdHi,infHi,incN:incFlags.filter(x=>x).length,date:new Date().toISOString().slice(0,10)};
+  RESULT={scores,verdict,sdHi,infHi,incN:incFlags.filter(x=>x).length,lite:GUEST||undefined,date:new Date().toISOString().slice(0,10)};
   if(GUEST){
     try{localStorage.setItem('musubi_guest',JSON.stringify({VER,NAT,RESULT}));}catch(e){}
   }else if(LIVE){
@@ -1088,6 +1123,7 @@ function resultScreen(){
   <div class="step">STEP 4 / 4</div>`}<h2>${t.resTitle}</h2>
   <div class="obody">
   <div class="verdict ${cls}">${ti}<small>${de}</small></div>
+  ${r.lite?`<div style="font-size:11.5px;color:var(--muted);line-height:1.6;background:var(--surface2);border:1px solid #3a3128;border-radius:12px;padding:10px 12px;margin-bottom:12px;">${t.liteNote}</div>`:''}
   ${typeCard(r)}
   ${compatSection(r,'res')}
   ${r.scores.map(s=>scoreBar(s,t)).join('')}
@@ -1467,13 +1503,18 @@ async function loadCards(){
     const likedSet=new Set((liked||[]).map(x=>x.liked));
     const {data:profs}=await sb.from('profiles').select('*')
       .eq('gender',og).neq('id',ME.id).not('mpi','is',null).limit(60);
+    const intName=id=>{const f=t.interests.find(x=>x[0]===id);return f?f[1]:null;};
     CARDS=(profs||[]).filter(p=>!likedSet.has(p.id)&&!BLOCKED.has(p.id)&&['pass','hold'].includes(p.mpi?.verdict))
-      .map(p=>({real:true,id:p.id,n:esc(p.nickname),a:p.age||'',l:esc([p.region,p.bio].filter(Boolean).join(' · ')),ph:p.photo_url,v:p.video_url||null,c:chipsFromMpi(p.mpi),ty:typeOf(p.mpi,og),top:topCode(p.mpi)}));
-    // 궁합 유형 우선 정렬 (안정 정렬: 궁합 유형이 앞으로)
-    if(RESULT&&RESULT.scores){
-      const comp=new Set(COMPAT[topCode(RESULT)]||[]);
-      CARDS.sort((a,b)=>((b.top&&comp.has(b.top))?1:0)-((a.top&&comp.has(a.top))?1:0));
-    }
+      .map(p=>({real:true,id:p.id,n:esc(p.nickname),a:p.age||'',l:esc(p.region||''),
+        pr:p.prompts||null,pu:p.purpose||null,il:p.interests||[],
+        ph:p.photo_url,v:p.video_url||null,
+        c:[...chipsFromMpi(p.mpi),...(p.interests||[]).slice(0,2).map(id=>intName(id)).filter(Boolean).map(x=>[x,0])],
+        ty:typeOf(p.mpi,og),top:topCode(p.mpi)}));
+    // 정렬: 궁합 유형(+2) + 같은 목적(+2) + 공통 관심사(개당 +1)
+    const comp=new Set(RESULT&&RESULT.scores?COMPAT[topCode(RESULT)]||[]:[]);
+    const myPu=MYPROF&&MYPROF.purpose,myIn=new Set((MYPROF&&MYPROF.interests)||[]);
+    CARDS.forEach(cd=>{cd.sc=((cd.top&&comp.has(cd.top))?2:0)+((myPu&&cd.pu===myPu)?2:0)+(cd.il||[]).filter(i=>myIn.has(i)).length;});
+    CARDS.sort((a,b)=>(b.sc||0)-(a.sc||0));
   }
   if(CARDS.length===0){
     const dp=T().demoProfiles;
@@ -1492,7 +1533,8 @@ function renderCards(){
     d.innerHTML=`<div class="photo" ${p.ph?`style="background-image:url('${p.ph}')"`:''}></div><div class="grad"></div>
       <div class="vbadge">${t.vbadge}</div>${p.ty?`<div class="tbadge">${p.ty.e} ${p.ty.s}</div>`:p.real?'':`<div class="dbadge">${t.demoBadge}</div>`}
       ${p.v?`<div class="vplay" onclick="playVideo('${p.v}')">▶</div>`:''}
-      <div class="pinfo"><h2>${p.n}<span class="age">${p.a}</span></h2><div class="loc">📍 ${p.l}${p.real?` <span class="rep" onclick="event.stopPropagation();reportMenu('${p.id}')">⚑</span>`:''}</div>
+      <div class="pinfo"><h2>${p.n}<span class="age">${p.a}</span></h2><div class="loc">📍 ${p.l}${p.pu?` · ${(t.purposes.find(x=>x[0]===p.pu)||[])[1]||''}`:''}${p.real?` <span class="rep" onclick="event.stopPropagation();reportMenu('${p.id}')">⚑</span>`:''}</div>
+      ${p.pr&&(p.pr.p1||p.pr.p3)?`<div class="loc" style="font-size:11px;opacity:.85;">${p.pr.p1?`🎯 ${esc(p.pr.p1)}`:`🎤 ${esc(p.pr.p3)}`}</div>`:''}
       <div class="chips">${(p.c||[]).map(x=>`<span class="chip ${x[1]?'score':''}">${x[0]}</span>`).join('')}</div></div>`;
     wrap.appendChild(d);
   }
@@ -1569,8 +1611,27 @@ async function openRoom(pid){
     .order('created_at');
   $('msgs').innerHTML=`<div class="trnote">${t.trnote}</div>`+
     (msgs||[]).map(m=>`<div class="msg ${m.sender===ME.id?'me':'them'}">${esc(m.content)}</div>`).join('');
+  if(!(msgs||[]).length){ // 첫 대화 — 아이스브레이커 제안 (프롬프트 기반)
+    window._iceArr=iceList(p);
+    $('msgs').innerHTML+=`<div style="padding:12px 4px;">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:9px;">${t.iceT}</div>
+      ${window._iceArr.map((s,i)=>`<div class="icechip" onclick="sendIce(${i})">${esc(s)}</div>`).join('')}</div>`;
+  }
   showScreen('scr-room');
   $('msgs').scrollTop=99999;
+}
+function iceList(p){
+  const t=T(),a=[],pr=p.prompts||{};
+  if(pr.p3)a.push(t.ice3(pr.p3));
+  if(pr.p1)a.push(t.ice1(pr.p1));
+  if(pr.p2)a.push(t.ice2(pr.p2));
+  t.iceGen.forEach(g=>{if(a.length<3)a.push(g);});
+  return a.slice(0,3);
+}
+function sendIce(i){
+  const inp=$('minput');
+  inp.value=(window._iceArr&&window._iceArr[i])||'';
+  sendMsg();
 }
 async function sendMsg(){
   const inp=$('minput');if(!inp.value.trim()||!ROOM||!LIVE)return;
